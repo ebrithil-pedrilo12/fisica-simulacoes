@@ -1,0 +1,393 @@
+# Create a standalone HTML file for a classroom-ready "digital scale" simulation
+# with keyboard navigation (←/→ to change example, ↑/↓ to change significant figures).
+#
+# The file can be hosted on GitHub Pages as-is.
+
+html = r"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Balança Digital — Algarismos Significativos</title>
+  <style>
+    :root{
+      --bg: #0f1222;
+      --panel: #171b35;
+      --muted: #9aa3b2;
+      --text: #e6ebf2;
+      --accent: #6ee7b7;
+      --accent-2: #60a5fa;
+      --danger: #f87171;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{
+      height:100%;
+      background: radial-gradient(1200px 600px at 20% 0%, #171b35 0%, #0f1222 50%, #0b0e1a 100%);
+      color:var(--text);
+      font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      margin:0;
+    }
+    .wrap{
+      max-width: 1100px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      margin-bottom: 18px;
+    }
+    header h1{
+      font-size: clamp(20px, 3vw, 28px);
+      margin:0;
+      letter-spacing:.2px;
+    }
+    header .hint{
+      color:var(--muted);
+      font-size: 14px;
+      opacity:.9;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .9fr;
+      gap: 18px;
+    }
+    @media (max-width: 920px){
+      .grid{grid-template-columns: 1fr}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    /* Scale */
+    .scale{
+      display:flex; flex-direction:column; gap:14px;
+      padding: 18px;
+      border-radius:12px;
+      background: linear-gradient(180deg, #0b101e, #0f1526);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .display{
+      background: #0b0f13;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      padding: 18px 18px;
+      min-height: 84px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      box-shadow: inset 0 0 18px rgba(0,0,0,.6);
+    }
+    .digits{
+      flex:1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: clamp(28px, 6vw, 54px);
+      letter-spacing: .06em;
+      color: #a7f3d0;
+      text-shadow: 0 0 6px rgba(110,231,183,.55), 0 0 22px rgba(110,231,183,.25);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .unit{
+      margin-left: 12px;
+      font-weight: 600;
+      color: #93c5fd;
+      text-shadow: 0 0 10px rgba(96,165,250,.35);
+      white-space: nowrap;
+    }
+    .label{
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing:.3px;
+      text-transform: uppercase;
+    }
+    .controls{
+      display:flex; flex-wrap:wrap; gap:10px;
+    }
+    .btn{
+      appearance:none;
+      background: linear-gradient(180deg, #1b2242, #141a35);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight:600;
+      cursor:pointer;
+      transition: transform .03s ease-in-out, background .2s;
+    }
+    .btn:active{ transform: translateY(1px) scale(.99) }
+    .btn.secondary{ background: linear-gradient(180deg, #13203a, #0f192e) }
+    .btn.ghost{
+      background: transparent;
+      border-color: rgba(255,255,255,.18);
+      color: var(--muted);
+      font-weight:500;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      background: rgba(96,165,250,.12);
+      border: 1px solid rgba(96,165,250,.25);
+      color:#bfdbfe;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.15);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #e5e7eb;
+    }
+    .stack{ display:flex; flex-direction:column; gap:8px }
+    .meta{
+      display:grid; gap:10px; grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+    @media (max-width: 520px){ .meta{ grid-template-columns: 1fr } }
+    .meta .row{
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .toast{
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: rgba(11, 15, 19, .9);
+      color: #e5e7eb;
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 10px 14px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transition: opacity .25s ease;
+      pointer-events: none;
+      font-size: 14px;
+    }
+    .toast.show{ opacity: 1 }
+    footer{
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    code.inline{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono"; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Balança Digital — Algarismos Significativos</h1>
+      <div class="hint">
+        Atalhos: <span class="kbd">←</span>/<span class="kbd">→</span> exemplo &nbsp;·&nbsp;
+        <span class="kbd">↑</span>/<span class="kbd">↓</span> alg. sig. &nbsp;·&nbsp;
+        <span class="kbd">R</span> reset
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="stack">
+          <div class="label">Leitura da balança</div>
+          <div class="scale">
+            <div class="display">
+              <div class="digits" id="digits">—</div>
+              <div class="unit" id="unit">g</div>
+            </div>
+
+            <div class="controls">
+              <button class="btn" id="prevBtn">← Anterior</button>
+              <button class="btn" id="nextBtn">Próximo →</button>
+              <span class="pill">Exemplo <span id="exampleIndex">1</span>/<span id="exampleCount">—</span></span>
+              <span style="flex:1"></span>
+              <button class="btn secondary" id="decSf">−</button>
+              <span class="pill">Alg. sig.: <strong id="sfLabel">3</strong></span>
+              <button class="btn secondary" id="incSf">+</button>
+              <button class="btn ghost" id="resetBtn">Reset</button>
+            </div>
+
+            <div class="meta">
+              <div class="row">
+                <span>Valor original</span>
+                <strong id="rawValue">—</strong>
+              </div>
+              <div class="row">
+                <span>Arredondado (alg. sig.)</span>
+                <strong id="roundedValue">—</strong>
+              </div>
+              <div class="row">
+                <span>Notação científica</span>
+                <strong id="sciValue">—</strong>
+              </div>
+              <div class="row">
+                <span>Resolução do instrumento</span>
+                <strong id="resolution">—</strong>
+              </div>
+            </div>
+          </div>
+
+          <footer>
+            Dica: use <span class="kbd">↑</span>/<span class="kbd">↓</span> para aumentar/diminuir os algarismos significativos.
+            Você pode editar a lista de exemplos no código (array <code class="inline">examples</code>).
+          </footer>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="stack">
+          <div class="label">Sobre a demonstração</div>
+          <p>
+            Esta página mostra como a leitura de uma balança digital muda quando
+            representamos o mesmo valor com um número diferente de <em>algarismos significativos</em>.
+            A “tela” da balança exibe a versão arredondada. No painel ao lado, você vê:
+          </p>
+          <ul>
+            <li><strong>Valor original</strong>: a medida “real” do exemplo.</li>
+            <li><strong>Arredondado</strong>: a mesma medida com <span id="sfInline">3</span> alg. sig.</li>
+            <li><strong>Notação científica</strong>: útil para números muito grandes/pequenos.</li>
+            <li><strong>Resolução</strong>: casas decimais típicas do instrumento do exemplo.</li>
+          </ul>
+          <p>
+            Navegue com as setas do teclado ou os botões. Pressione <span class="kbd">R</span> para resetar a configuração padrão.
+          </p>
+          <div class="label" style="margin-top:8px">Sugestão didática</div>
+          <p style="margin-top:6px">
+            Peça aos alunos que estimem quantos algarismos significativos a balança “merece”
+            com base na resolução. Em seguida, altere os algarismos significativos e discuta
+            por que certas casas são (ou não) significativas.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Dica: use ↑/↓ para mudar os algarismos significativos.</div>
+
+  <script>
+    // ===== Examples you can customize =====
+    // Each example: { label, value, unit, resolution }
+    const examples = [
+      { label: "Massa de um estojo",   value: 0.50321, unit: "kg", resolution: "0,00001 kg" },
+      { label: "Massa de uma maçã",    value: 152.36,  unit: "g",  resolution: "0,01 g" },
+      { label: "Carga em prato 2",     value: 12.7,    unit: "g",  resolution: "0,1 g" },
+      { label: "Amostra de reagente",  value: 5.030e2, unit: "mg", resolution: "1 mg" },
+      { label: "Parafuso M5",          value: 3.004,   unit: "g",  resolution: "0,001 g" },
+      { label: "Cilindro de metal",    value: 0.00784, unit: "kg", resolution: "0,00001 kg" }
+    ];
+
+    // ===== State =====
+    let idx = 0;
+    let sigFigs = 3;
+    const MIN_SF = 1, MAX_SF = 8;
+
+    // ===== Helpers =====
+    function toSigFigsStr(num, n){
+      if (!isFinite(num)) return String(num);
+      if (num === 0) return "0".padEnd(n+1, "0"); // e.g., 0.000 when n>1 (simple)
+      // Use toPrecision but prefer plain decimal when reasonable
+      const p = Number(num).toPrecision(n);
+      // Decide whether to keep exponential or convert to plain
+      const abs = Math.abs(num);
+      if (abs >= 1e-3 && abs < 1e6 && !p.includes("e")){
+        return p;
+      }
+      // Convert exponential to decimal if within range
+      const asNum = Number(p);
+      if (abs >= 1e-3 && abs < 1e6){
+        // Keep necessary trailing zeros
+        const parts = p.split("e");
+        const sci = Number(num).toExponential(n-1);
+        return asNum.toString(); // fallback; detailed zero control below
+      }
+      return Number(num).toExponential(n-1);
+    }
+
+    function formatSci(num, n){
+      return Number(num).toExponential(Math.max(0, n-1));
+    }
+
+    function setText(id, txt){ document.getElementById(id).textContent = txt; }
+
+    function update(){
+      const ex = examples[idx];
+      setText("exampleIndex", (idx+1));
+      setText("exampleCount", examples.length);
+      setText("unit", ex.unit);
+      setText("sfLabel", sigFigs);
+      setText("sfInline", sigFigs);
+
+      // Rounded value for display with n sig figs
+      const rounded = Number(ex.value).toPrecision(sigFigs);
+      // For the big display, try to keep a "scale-like" look: prefer fixed when feasible
+      let big = rounded;
+      const v = Number(rounded);
+      if (Math.abs(v) >= 1e-3 && Math.abs(v) < 1e6 && !rounded.includes("e")){
+        big = rounded;
+      }else{
+        // show a compact scientific notation
+        big = formatSci(ex.value, sigFigs).replace("e+", "×10^").replace("e-", "×10^-");
+      }
+
+      setText("digits", big);
+      setText("rawValue", `${ex.value} ${ex.unit}`);
+      setText("roundedValue", `${rounded} ${ex.unit}`);
+      setText("sciValue", `${formatSci(ex.value, sigFigs)} ${ex.unit}`);
+      setText("resolution", ex.resolution);
+
+      // Optional: show current example label as tooltip
+      document.title = `${ex.label} — Balança Digital`;
+    }
+
+    function next(){ idx = (idx + 1) % examples.length; pulseToast(); update(); }
+    function prev(){ idx = (idx - 1 + examples.length) % examples.length; pulseToast(); update(); }
+    function inc(){ sigFigs = Math.min(MAX_SF, sigFigs + 1); pulseToast(); update(); }
+    function dec(){ sigFigs = Math.max(MIN_SF, sigFigs - 1); pulseToast(); update(); }
+    function reset(){ idx = 0; sigFigs = 3; update(); }
+
+    // ===== UI wires =====
+    document.getElementById("nextBtn").addEventListener("click", next);
+    document.getElementById("prevBtn").addEventListener("click", prev);
+    document.getElementById("incSf").addEventListener("click", inc);
+    document.getElementById("decSf").addEventListener("click", dec);
+    document.getElementById("resetBtn").addEventListener("click", reset);
+
+    window.addEventListener("keydown", (e)=>{
+      if (e.key === "ArrowRight"){ next(); }
+      else if (e.key === "ArrowLeft"){ prev(); }
+      else if (e.key === "ArrowUp"){ inc(); }
+      else if (e.key === "ArrowDown"){ dec(); }
+      else if (e.key.toLowerCase() === "r"){ reset(); }
+    });
+
+    // ===== Toast hint =====
+    let toastTimer = null;
+    function pulseToast(){
+      const el = document.getElementById("toast");
+      el.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=> el.classList.remove("show"), 900);
+    }
+
+    // init
+    update();
+    setTimeout(()=>{
+      const el = document.getElementById("toast");
+      el.textContent = "Use ←/→ para navegar e ↑/↓ para mudar os algarismos significativos.";
+      el.classList.add("show");
+      setTimeout(()=> el.classList.remove("show"), 2800);
+    }, 600);
+  </script>
+</body>
+</html>
+"""
+
+path = "/mnt/data/balanca_algarismos_significativos.html"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(html)
+
+path
