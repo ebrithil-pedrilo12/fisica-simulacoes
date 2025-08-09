@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Balança Digital — Algarismos Significativos (Tabela da Aula)</title>
+  <title>Balança Digital — Algarismos Significativos (Auto-SF por exemplo)</title>
   <style>
     :root{ --bg:#0f1222; --panel:#171b35; --muted:#9aa3b2; --text:#e6ebf2; --accent:#6ee7b7; --accent-2:#60a5fa; --danger:#f87171; --shadow:0 10px 30px rgba(0,0,0,.35) }
     *{box-sizing:border-box}
@@ -77,7 +77,7 @@
           </div>
 
           <footer>
-            Ao mudar de exemplo, os <em>alg. sig.</em> são definidos automaticamente conforme o valor original. Você pode ajustar com ↑/↓ para demonstrar arredondamento.
+            Ao mudar de exemplo, os <em>alg. sig.</em> definem-se automaticamente pelo valor original. Você pode ajustar com ↑/↓ para demonstrar arredondamento.
           </footer>
         </div>
       </section>
@@ -85,12 +85,7 @@
       <aside class="card">
         <div class="stack">
           <div class="label">Sobre</div>
-          <p>Os exemplos reproduzem a tabela usada em aula (I, II e III). O “Valor original” preserva a formatação (vírgula e zeros). O mostrador destaca o último dígito significativo conforme a seleção.</p>
-          <ul>
-            <li><strong>Valor original</strong>: texto da tabela.</li>
-            <li><strong>Arredondado</strong>: com <span id="sfInline">3</span> alg. sig. (ajusta sozinho por exemplo, mas você pode alterar).</li>
-            <li><strong>Notação científica</strong>: com os mesmos algarismos significativos.</li>
-          </ul>
+          <p>Os exemplos reproduzem a tabela da aula (I, II e III). O “Valor original” preserva a formatação (vírgula e zeros). O mostrador destaca o último dígito significativo.</p>
         </div>
       </aside>
     </div>
@@ -99,7 +94,7 @@
   <div class="toast" id="toast">Dica: use ↑/↓ para mudar os algarismos significativos.</div>
 
   <script>
-    // ===== EXEMPLOS DA TABELA (com formatação preservada em rawStr e sig original) =====
+    // ===== EXEMPLOS (rawStr para exibição fiel; sig = algarismos significativos originais) =====
     const examples = [
       // I)
       { label:"I-a", rawStr:"7",       value:7,        unit:"", resolution:"", sig:1 },
@@ -133,14 +128,13 @@
     function setText(id, txt){ document.getElementById(id).textContent = txt; }
     function formatSci(num, n){ return Number(num).toExponential(Math.max(0, n-1)); }
 
-    // mostra com último dígito significativo destacado
     function formatDisplayHighlighted(num, n){
       if (!isFinite(num)) return String(num);
       const p = Number(num).toPrecision(n);
       const abs = Math.abs(num);
       let displayStr;
       if (abs >= 1e-3 && abs < 1e6 && !p.includes("e")) {
-        displayStr = p; // decimal comum
+        displayStr = p;
       } else {
         displayStr = Number(num).toExponential(n-1).replace("e+", "×10^").replace("e-", "×10^-");
       }
@@ -157,7 +151,6 @@
       setText("exampleCount", examples.length);
       setText("unit", ex.unit);
       setText("sfLabel", sigFigs);
-      setText("sfInline", sigFigs);
       setText("labelValue", ex.label);
 
       const rounded = Number(ex.value).toPrecision(sigFigs);
@@ -174,19 +167,19 @@
 
     function next(){
       idx = (idx + 1) % examples.length;
-      sigFigs = examples[idx].sig || sigFigs;
-      pulseToast();
-      update();
+      sigFigs = clampSF(examples[idx].sig ?? sigFigs);
+      pulseToast(); update();
     }
     function prev(){
       idx = (idx - 1 + examples.length) % examples.length;
-      sigFigs = examples[idx].sig || sigFigs;
-      pulseToast();
-      update();
+      sigFigs = clampSF(examples[idx].sig ?? sigFigs);
+      pulseToast(); update();
     }
-    function inc(){ sigFigs = Math.min(MAX_SF, sigFigs + 1); pulseToast(); update(); }
-    function dec(){ sigFigs = Math.max(MIN_SF, sigFigs - 1); pulseToast(); update(); }
-    function reset(){ idx = 0; sigFigs = examples[0].sig || 3; update(); }
+    function inc(){ sigFigs = clampSF(sigFigs + 1); pulseToast(); update(); }
+    function dec(){ sigFigs = clampSF(sigFigs - 1); pulseToast(); update(); }
+    function reset(){ idx = 0; sigFigs = clampSF(examples[0].sig || 3); update(); }
+
+    function clampSF(n){ return Math.max(MIN_SF, Math.min(MAX_SF, n)); }
 
     // UI
     document.getElementById("nextBtn").addEventListener("click", next);
@@ -216,9 +209,9 @@
     update();
     setTimeout(()=>{
       const el = document.getElementById("toast");
-      el.textContent = "Use ←/→ para navegar e ↑/↓ para algarismos significativos.";
+      el.textContent = "Use ←/→ para navegar; os alg. sig. ajustam-se automaticamente por exemplo. ↑/↓ alteram manualmente.";
       el.classList.add("show");
-      setTimeout(()=> el.classList.remove("show"), 2500);
+      setTimeout(()=> el.classList.remove("show"), 2600);
     }, 600);
   </script>
 </body>
