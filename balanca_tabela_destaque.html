@@ -77,7 +77,7 @@
           </div>
 
           <footer>
-            Use <span class="kbd">↑</span>/<span class="kbd">↓</span> para mudar os algarismos significativos e <span class="kbd">←</span>/<span class="kbd">→</span> para navegar pelos casos I, II e III.
+            Ao mudar de exemplo, os <em>alg. sig.</em> são definidos automaticamente conforme o valor original. Você pode ajustar com ↑/↓ para demonstrar arredondamento.
           </footer>
         </div>
       </section>
@@ -88,7 +88,7 @@
           <p>Os exemplos reproduzem a tabela usada em aula (I, II e III). O “Valor original” preserva a formatação (vírgula e zeros). O mostrador destaca o último dígito significativo conforme a seleção.</p>
           <ul>
             <li><strong>Valor original</strong>: texto da tabela.</li>
-            <li><strong>Arredondado</strong>: com <span id="sfInline">3</span> alg. sig.</li>
+            <li><strong>Arredondado</strong>: com <span id="sfInline">3</span> alg. sig. (ajusta sozinho por exemplo, mas você pode alterar).</li>
             <li><strong>Notação científica</strong>: com os mesmos algarismos significativos.</li>
           </ul>
         </div>
@@ -99,44 +99,41 @@
   <div class="toast" id="toast">Dica: use ↑/↓ para mudar os algarismos significativos.</div>
 
   <script>
-    // ===== EXEMPLOS DA TABELA (com formatação preservada em rawStr) =====
+    // ===== EXEMPLOS DA TABELA (com formatação preservada em rawStr e sig original) =====
     const examples = [
       // I)
-      { label:"I-a", rawStr:"7",       value:7,        unit:"", resolution:"" },
-      { label:"I-b", rawStr:"7,41",    value:7.41,     unit:"", resolution:"" },
-      { label:"I-c", rawStr:"7,414",   value:7.414,    unit:"", resolution:"" },
-      { label:"I-d", rawStr:"7,4",     value:7.4,      unit:"", resolution:"" },
+      { label:"I-a", rawStr:"7",       value:7,        unit:"", resolution:"", sig:1 },
+      { label:"I-b", rawStr:"7,41",    value:7.41,     unit:"", resolution:"", sig:3 },
+      { label:"I-c", rawStr:"7,414",   value:7.414,    unit:"", resolution:"", sig:4 },
+      { label:"I-d", rawStr:"7,4",     value:7.4,      unit:"", resolution:"", sig:2 },
 
       // II)
-      { label:"II-a", rawStr:"7,40",     value:7.40,    unit:"", resolution:"" },
-      { label:"II-b", rawStr:"7,0000",   value:7.0000,  unit:"", resolution:"" },
-      { label:"II-c", rawStr:"7,04",     value:7.04,    unit:"", resolution:"" },
-      { label:"II-d", rawStr:"7,0004",   value:7.0004,  unit:"", resolution:"" },
-      { label:"II-e", rawStr:"7,0400",   value:7.0400,  unit:"", resolution:"" },
-      { label:"II-f", rawStr:"700,4",    value:700.4,   unit:"", resolution:"" },
+      { label:"II-a", rawStr:"7,40",     value:7.40,    unit:"", resolution:"", sig:3 },
+      { label:"II-b", rawStr:"7,0000",   value:7.0000,  unit:"", resolution:"", sig:5 },
+      { label:"II-c", rawStr:"7,04",     value:7.04,    unit:"", resolution:"", sig:3 },
+      { label:"II-d", rawStr:"7,0004",   value:7.0004,  unit:"", resolution:"", sig:5 },
+      { label:"II-e", rawStr:"7,0400",   value:7.0400,  unit:"", resolution:"", sig:5 },
+      { label:"II-f", rawStr:"700,4",    value:700.4,   unit:"", resolution:"", sig:4 },
 
       // III)
-      { label:"III-a", rawStr:",007",    value:0.007,    unit:"", resolution:"" },
-      { label:"III-b", rawStr:"0,007",   value:0.007,    unit:"", resolution:"" },
-      { label:"III-c", rawStr:"0,00746", value:0.00746,  unit:"", resolution:"" },
-      { label:"III-d", rawStr:"0,00007", value:0.00007,  unit:"", resolution:"" },
-      { label:"III-e", rawStr:"0,00700", value:0.00700,  unit:"", resolution:"" },
-      { label:"III-f", rawStr:"700,007", value:700.007,  unit:"", resolution:"" }
+      { label:"III-a", rawStr:",007",    value:0.007,    unit:"", resolution:"", sig:1 },
+      { label:"III-b", rawStr:"0,007",   value:0.007,    unit:"", resolution:"", sig:1 },
+      { label:"III-c", rawStr:"0,00746", value:0.00746,  unit:"", resolution:"", sig:3 },
+      { label:"III-d", rawStr:"0,00007", value:0.00007,  unit:"", resolution:"", sig:1 },
+      { label:"III-e", rawStr:"0,00700", value:0.00700,  unit:"", resolution:"", sig:3 },
+      { label:"III-f", rawStr:"700,007", value:700.007,  unit:"", resolution:"", sig:6 }
     ];
 
     // ===== Estado =====
     let idx = 0;
-    let sigFigs = 3;
+    let sigFigs = examples[0].sig || 3;
     const MIN_SF = 1, MAX_SF = 8;
 
     // ===== Helpers =====
     function setText(id, txt){ document.getElementById(id).textContent = txt; }
+    function formatSci(num, n){ return Number(num).toExponential(Math.max(0, n-1)); }
 
-    function formatSci(num, n){
-      return Number(num).toExponential(Math.max(0, n-1));
-    }
-
-    // monta o mostrador com o ÚLTIMO dígito significativo destacado
+    // mostra com último dígito significativo destacado
     function formatDisplayHighlighted(num, n){
       if (!isFinite(num)) return String(num);
       const p = Number(num).toPrecision(n);
@@ -145,13 +142,11 @@
       if (abs >= 1e-3 && abs < 1e6 && !p.includes("e")) {
         displayStr = p; // decimal comum
       } else {
-        // notação científica com ×10^
         displayStr = Number(num).toExponential(n-1).replace("e+", "×10^").replace("e-", "×10^-");
       }
-      // separar expoente (se houver) e destacar último dígito significativo da parte base
       const expMatch = displayStr.match(/(×10\^[\+\-]?\d+)$/);
       const base = expMatch ? displayStr.replace(expMatch[1], "") : displayStr;
-      if (base.length === 0) return displayStr; // segurança
+      if (base.length === 0) return displayStr;
       const baseHL = base.slice(0, -1) + '<span class="highlight">' + base.slice(-1) + '</span>';
       return expMatch ? baseHL + expMatch[1] : baseHL;
     }
@@ -168,7 +163,7 @@
       const rounded = Number(ex.value).toPrecision(sigFigs);
       const big = formatDisplayHighlighted(ex.value, sigFigs);
 
-      document.getElementById("digits").innerHTML = big; // usa innerHTML por causa do highlight
+      document.getElementById("digits").innerHTML = big;
       setText("rawValue", ex.rawStr + (ex.unit ? " " + ex.unit : ""));
       setText("roundedValue", `${rounded}${ex.unit ? " " + ex.unit : ""}`);
       setText("sciValue", `${formatSci(ex.value, sigFigs)}${ex.unit ? " " + ex.unit : ""}`);
@@ -177,11 +172,21 @@
       document.title = `${ex.label} — Balança Digital`;
     }
 
-    function next(){ idx = (idx + 1) % examples.length; pulseToast(); update(); }
-    function prev(){ idx = (idx - 1 + examples.length) % examples.length; pulseToast(); update(); }
+    function next(){
+      idx = (idx + 1) % examples.length;
+      sigFigs = examples[idx].sig || sigFigs;
+      pulseToast();
+      update();
+    }
+    function prev(){
+      idx = (idx - 1 + examples.length) % examples.length;
+      sigFigs = examples[idx].sig || sigFigs;
+      pulseToast();
+      update();
+    }
     function inc(){ sigFigs = Math.min(MAX_SF, sigFigs + 1); pulseToast(); update(); }
     function dec(){ sigFigs = Math.max(MIN_SF, sigFigs - 1); pulseToast(); update(); }
-    function reset(){ idx = 0; sigFigs = 3; update(); }
+    function reset(){ idx = 0; sigFigs = examples[0].sig || 3; update(); }
 
     // UI
     document.getElementById("nextBtn").addEventListener("click", next);
