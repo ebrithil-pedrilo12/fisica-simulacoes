@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MU — João de bicicleta (2 trechos)</title>
+<style>
+  :root{
+    --bg:#0e1324; --panel:#141a33; --text:#e6ebf2; --muted:#9aa3b2;
+    --accent:#60a5fa; --accent2:#6ee7b7; --danger:#ef4444; --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 20% 0%, #171b35 0%, #0f1222 50%, #0b0e1a 100%);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:1280px;margin:28px auto 64px;padding:0 18px}
+  h1{margin:0 0 8px;font-size:clamp(22px,3vw,30px)}
+  .muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1.45fr .55fr;gap:24px;align-items:start}
+  @media (max-width:1100px){ .grid{grid-template-columns:1fr} }
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.07);border-radius:14px;box-shadow:var(--shadow);padding:14px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.25);color:#bfdbfe;padding:8px 12px;border-radius:999px;font-size:14px}
+  .btn{appearance:none;border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,#1c2347,#141a36);color:#e8eef7;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn.red{background:linear-gradient(180deg,#7a1f1f,#5d1717);border-color:#b43b3b}
+  .btn.green{background:linear-gradient(180deg,#1e7046,#175c39);border-color:#2bb673}
+  .field{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px;margin-top:8px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
+  .field input[type="range"]{width:100%}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono";background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);padding:1px 6px;border-radius:6px;font-size:12px;color:#e5e7eb}
+  /* palco */
+  .stage{background:linear-gradient(180deg,#0b101e,#0f1526);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px}
+  .road{position:relative;height:170px;background:linear-gradient(180deg,#303744,#242b36);border-radius:10px;overflow:hidden}
+  .lane{position:absolute;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg, rgba(255,255,255,.6) 0 28px, transparent 28px 56px);top:50%;transform:translateY(-50%);opacity:.5}
+  .finish{position:absolute;right:0;top:0;bottom:0;width:8px;background:repeating-linear-gradient(0deg,#ddd 0 10px,#111 10px 20px)}
+  .bike{position:absolute;bottom:18px;left:0;width:78px;height:36px;background:linear-gradient(180deg,#60a5fa,#3b82f6);border:2px solid rgba(255,255,255,.35);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .wheel{position:absolute;bottom:-8px;width:16px;height:16px;background:#111;border-radius:50%;border:2px solid #444}
+  .wheel.l{left:10px} .wheel.r{right:10px}
+  /* gráficos */
+  .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}
+  @media (max-width:900px){ .charts{grid-template-columns:1fr} }
+  .chartWrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px}
+  canvas{display:block;width:100%;height:260px;border-radius:8px}
+  .rightPanel{position:sticky; top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>MU — João de bicicleta (2 trechos)</h1>
+  <div class="muted">Atalhos: <span class="kbd">Espaço</span> play/pausa · <span class="kbd">R</span> reset</div>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card stage">
+      <div class="row" style="justify-content:space-between; margin-bottom:8px">
+        <span class="pill">t: <strong id="tLabel">0:00</strong></span>
+        <span class="pill">v: <strong id="vLabel">0.00 m/s</strong> (<strong id="vKmh">0.00 km/h</strong>)</span>
+        <span class="pill">s trecho: <strong id="sSegLabel">0.00 km</strong></span>
+        <span class="pill">s total: <strong id="sTotLabel">0.00 km</strong></span>
+      </div>
+
+      <div class="road" id="road">
+        <div class="lane"></div>
+        <div class="bike" id="bike">
+          <div class="wheel l"></div><div class="wheel r"></div>
+        </div>
+        <div class="finish" id="finish"></div>
+      </div>
+
+      <div class="charts">
+        <div class="chartWrap"><canvas id="st" aria-label="s vs t"></canvas></div>
+        <div class="chartWrap"><canvas id="vt" aria-label="v vs t"></canvas></div>
+      </div>
+    </section>
+
+    <aside class="card rightPanel">
+      <div class="row" style="gap:8px">
+        <button class="btn green" id="playBtn">Iniciar</button>
+        <button class="btn" id="pauseBtn">Pausar</button>
+        <button class="btn red" id="resetBtn">Resetar</button>
+      </div>
+
+      <div class="field">
+        <label>Trecho 1 — velocidade (km/h) · tempo (min)</label>
+        <input type="range" id="v1" min="4" max="30" step="0.5" value="12">
+        <div class="row"><span class="muted">v₁:</span><strong id="v1Val">12.0</strong> km/h</div>
+        <input type="range" id="t1" min="2" max="30" step="1" value="10">
+        <div class="row"><span class="muted">Δt₁:</span><strong id="t1Val">10</strong> min</div>
+      </div>
+
+      <div class="field">
+        <label>Trecho 2 — velocidade (km/h) · tempo (min)</label>
+        <input type="range" id="v2" min="4" max="40" step="0.5" value="18">
+        <div class="row"><span class="muted">v₂:</span><strong id="v2Val">18.0</strong> km/h</div>
+        <input type="range" id="t2" min="2" max="40" step="1" value="20">
+        <div class="row"><span class="muted">Δt₂:</span><strong id="t2Val">20</strong> min</div>
+      </div>
+
+      <div class="field">
+        <label>Pista automática</label>
+        <div class="row" style="gap:8px">
+          <input type="checkbox" id="autoTrack" checked>
+          <span class="muted">Ajusta o comprimento para caber o percurso total (com 10% de folga).</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div><b>Fórmulas (MU)</b></div>
+        <div>s = v · t  &nbsp; (por trecho)</div>
+        <div>v̄ = s<sub>total</sub> / t<sub>total</sub></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+  // ==== util ====
+  const $ = id => document.getElementById(id);
+  const kmhToMps = v => v/3.6;
+  const mpsToKmh = v => v*3.6;
+  const minToSec = m => m*60;
+
+  // ==== refs ====
+  const road = $("road"), bike = $("bike"), finish = $("finish");
+  const tLabel = $("tLabel"), vLabel = $("vLabel"), vKmh = $("vKmh");
+  const sSegLabel = $("sSegLabel"), sTotLabel = $("sTotLabel");
+  const v1S = $("v1"), t1S = $("t1"), v2S = $("v2"), t2S = $("t2"), autoTrack = $("autoTrack");
+  const v1Val = $("v1Val"), t1Val = $("t1Val"), v2Val = $("v2Val"), t2Val = $("t2Val");
+  const playBtn = $("playBtn"), pauseBtn = $("pauseBtn"), resetBtn = $("resetBtn");
+  const st = $("st"), vt = $("vt"), ctxS = st.getContext("2d"), ctxV = vt.getContext("2d");
+
+  // ==== estado ====
+  let v1 = +v1S.value, v2 = +v2S.value; // km/h
+  let dt1m = +t1S.value, dt2m = +t2S.value; // min
+  let T = minToSec(dt1m + dt2m); // s
+  let running = false, t = 0; // s
+  let sTot = 0, sSeg = 0, seg = 1;
+  let lastTs = null;
+  let L = 200; // m (comprimento pista)
+  const pxPerM = () => (road.clientWidth - 110)/L;
+
+  // ==== canvas responsivo ====
+  function resizeCanvases(){
+    [st, vt].forEach(c=>{
+      const parent = c.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      c.width = Math.floor(parent.width * dpr);
+      c.height = Math.floor(260 * dpr);
+      c.style.width = parent.width + "px";
+      c.style.height = "260px";
+    });
+    drawAxes();
+    redraw();
+  }
+  window.addEventListener("resize", resizeCanvases);
+
+  function drawAxes(){
+    [ [ctxS,"s (km)","t (min)"], [ctxV,"v (km/h)","t (min)"] ].forEach(([ctx,yl,xl])=>{
+      const dpr = window.devicePixelRatio || 1;
+      const cw=ctx.canvas.width, ch=ctx.canvas.height;
+      const x0=50*dpr, y0=20*dpr, w=cw-80*dpr, h=ch-70*dpr;
+      ctx.clearRect(0,0,cw,ch);
+      ctx.strokeStyle="rgba(255,255,255,.25)";
+      ctx.strokeRect(x0,y0,w,h);
+      ctx.fillStyle="rgba(230,235,242,.9)";
+      ctx.font=(12*dpr)+"px ui-monospace, monospace";
+      ctx.fillText(xl, x0+w/2-20*dpr, y0+h+30*dpr);
+      ctx.save(); ctx.translate(16*dpr, y0+h/2+20*dpr); ctx.rotate(-Math.PI/2);
+      ctx.fillText(yl,0,0); ctx.restore();
+    });
+  }
+
+  const plot = {t:[], s:[], v:[]};
+  function resetPlot(){ plot.t.length=plot.s.length=plot.v.length=0; drawAxes(); }
+
+  function pushPoint(tSec, sKm, vKmhNow){
+    plot.t.push(tSec/60);
+    plot.s.push(sKm);
+    plot.v.push(vKmhNow);
+    redraw();
+  }
+
+  function redraw(){
+    drawAxes();
+    drawSeries(ctxS, plot.t, plot.s);
+    drawSeries(ctxV, plot.t, plot.v);
+  }
+
+  function drawSeries(ctx, xs, ys){
+    if (xs.length<2) return;
+    const dpr = window.devicePixelRatio || 1;
+    const cw=ctx.canvas.width, ch=ctx.canvas.height;
+    const x0=50*dpr, y0=20*dpr, w=cw-80*dpr, h=ch-70*dpr;
+    const xmin=0, xmax=Math.max(xs[xs.length-1], (dt1m+dt2m));
+    const ymin=Math.min(...ys, 0), ymax=Math.max(...ys, 1);
+    ctx.save();
+    ctx.beginPath();
+    for(let i=0;i<xs.length;i++){
+      const x = x0 + ((xs[i]-xmin)/(xmax-xmin))*w;
+      const y = y0 + h - ((ys[i]-ymin)/(ymax-ymin||1))*h;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.lineWidth=2*dpr; ctx.strokeStyle="rgba(110,231,183,.9)"; ctx.stroke();
+    ctx.restore();
+  }
+
+  // ==== lógica ====
+  function updateFromUI(){
+    v1 = +v1S.value; v2 = +v2S.value;
+    dt1m = +t1S.value; dt2m = +t2S.value;
+    v1Val.textContent = v1.toFixed(1); v2Val.textContent = v2.toFixed(1);
+    t1Val.textContent = dt1m; t2Val.textContent = dt2m;
+    T = minToSec(dt1m + dt2m);
+
+    // pista automática
+    if (autoTrack.checked){
+      const s1 = v1*dt1m/60; // km
+      const s2 = v2*dt2m/60; // km
+      const sTotalKm = s1 + s2;
+      const sTotalM = sTotalKm*1000;
+      L = Math.max(20, Math.min(2000, Math.ceil(sTotalM*1.1)));
+    }
+    finish.style.right="0px";
+  }
+
+  function resetAll(){
+    running=false; t=0; seg=1; sTot=0; sSeg=0; lastTs=null;
+    bike.style.left="0px";
+    tLabel.textContent="0:00";
+    vLabel.textContent="0.00 m/s"; vKmh.textContent="0.00 km/h";
+    sSegLabel.textContent="0.00 km"; sTotLabel.textContent="0.00 km";
+    resetPlot();
+  }
+
+  function step(dt){
+    // qual trecho estamos?
+    const t1 = minToSec(dt1m);
+    const vNowKmh = (t < t1)? v1 : v2;
+    const vNowMps = kmhToMps(vNowKmh);
+
+    // avanço
+    t += dt;
+    if (t > T){ t = T; running=false; }
+
+    const ds = vNowMps * dt; // m
+    sTot += ds;
+    // s no trecho
+    if (t <= t1) { sSeg += ds; seg=1; }
+    else {
+      if (seg===1){ sSeg = 0; seg=2; }
+      sSeg += ds;
+    }
+
+    // posição na pista
+    const x = Math.min(sTot, L); // m
+    bike.style.left = (x * pxPerM()) + "px";
+
+    // labels
+    const mm = Math.floor(t/60), ss = Math.floor(t%60);
+    tLabel.textContent = `${String(mm).padStart(1,'0')}:${String(ss).padStart(2,'0')}`;
+    vLabel.textContent = vNowMps.toFixed(2) + " m/s";
+    vKmh.textContent  = vNowKmh.toFixed(2) + " km/h";
+    sSegLabel.textContent = (sSeg/1000).toFixed(2) + " km";
+    sTotLabel.textContent = (sTot/1000).toFixed(2) + " km";
+
+    // gráficos: s total (km) e v (km/h)
+    pushPoint(t, sTot/1000, vNowKmh);
+  }
+
+  function frame(ts){
+    if (lastTs==null) lastTs=ts;
+    const dt = Math.min(0.05, (ts-lastTs)/1000);
+    lastTs=ts;
+    if (running){ step(dt); requestAnimationFrame(frame); }
+  }
+
+  function play(){ if(!running && t<T){ running=true; lastTs=null; requestAnimationFrame(frame); } }
+  function pause(){ running=false; }
+
+  // ==== eventos ====
+  [v1S,t1S,v2S,t2S,autoTrack].forEach(el=> el.addEventListener('input', ()=>{ updateFromUI(); resetAll(); }));
+  playBtn.addEventListener('click', play);
+  pauseBtn.addEventListener('click', pause);
+  resetBtn.addEventListener('click', ()=>{ updateFromUI(); resetAll(); });
+
+  window.addEventListener('keydown', e=>{
+    if (e.code==='Space'){ e.preventDefault(); running?pause():play(); }
+    else if (e.key.toLowerCase()==='r'){ updateFromUI(); resetAll(); }
+  });
+
+  // init
+  updateFromUI();
+  resizeCanvases();
+  resetAll();
+</script>
+</body>
+</html>
