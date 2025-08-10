@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Notação Científica — Exercícios IV e V</title>
+<title>Notação científica — Determine o número de algarismos significativos</title>
 <style>
   :root{ --bg:#0f1222; --panel:#171b35; --muted:#9aa3b2; --text:#e6ebf2; --accent:#6ee7b7; --accent-2:#60a5fa; --shadow:0 10px 30px rgba(0,0,0,.35) }
   *{box-sizing:border-box}
@@ -25,8 +25,6 @@
   @media (max-width:680px){ .meta{grid-template-columns:1fr} }
   .rowmeta{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between}
   .highlight{ color:#fbbf24; text-shadow:0 0 6px rgba(251,191,36,.6), 0 0 18px rgba(251,191,36,.35) }
-  .groupTabs .btn{padding:6px 10px}
-  .optTabs .btn{padding:6px 10px}
   .active{outline:2px solid rgba(96,165,250,.6)}
   .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(11,15,19,.9);color:#e5e7eb;border:1px solid rgba(255,255,255,.12);padding:10px 14px;border-radius:10px;box-shadow:var(--shadow);opacity:0;transition:opacity .25s ease;pointer-events:none;font-size:14px}
   .toast.show{opacity:1}
@@ -35,27 +33,11 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Notação Científica — IV & V</h1>
+      <h1>Notação científica — Determine o número de algarismos significativos</h1>
       <div class="hint">←/→ exemplo • ↑/↓ alterna científica/decimal • R reset</div>
     </header>
 
     <section class="card">
-      <div class="row" style="justify-content:space-between">
-        <div class="row groupTabs" role="tablist" aria-label="Grupo">
-          <span class="label">Grupo</span>
-          <button class="btn ghost" id="tabIV">IV</button>
-          <button class="btn ghost" id="tabV">V</button>
-        </div>
-        <div class="row optTabs" role="tablist" aria-label="Opção">
-          <span class="label">Opção</span>
-          <button class="btn ghost" data-opt="a">a</button>
-          <button class="btn ghost" data-opt="b">b</button>
-          <button class="btn ghost" data-opt="c">c</button>
-          <button class="btn ghost" data-opt="d">d</button>
-          <button class="btn ghost" data-opt="e">e</button>
-        </div>
-      </div>
-
       <div class="row" style="margin-top:10px">
         <button class="btn" id="prevBtn">← Anterior</button>
         <button class="btn" id="nextBtn">Próximo →</button>
@@ -66,56 +48,30 @@
 
       <div class="label" style="margin-top:12px">Exibição principal</div>
       <div class="display"><div class="digits" id="mainDisplay">—</div></div>
-
-      <div class="meta" style="margin-top:12px">
-        <div class="rowmeta"><span>Texto original</span><strong id="rawText">—</strong></div>
-        <div class="rowmeta"><span>Mantissa</span><strong id="mantissaText">—</strong></div>
-        <div class="rowmeta"><span>Expoente</span><strong id="expText">—</strong></div>
-        <div class="rowmeta"><span>Valor decimal (com mesmos alg. sig.)</span><strong id="plainText">—</strong></div>
-      </div>
-    </section>
-
-    <section class="card" style="margin-top:16px">
-      <div class="label">Notas didáticas rápidas</div>
-      <ul>
-        <li><b>Algarismos significativos</b> vêm da <b>mantissa</b>. Ex.: 7×10⁻³ tem <b>1</b> alg. sig.; 7,00×10⁻³ tem <b>3</b>.</li>
-        <li><b>Zeros à esquerda</b> em decimal (0,007) <b>não</b> contam; <b>zeros à direita</b> contam <i>se forem escritos</i> (0,00700 = 3 alg. sig.).</li>
-        <li>Mostrar “0,007” <b>não implica</b> que a resolução seja 0,001; quem fixa a precisão é a forma de reporte (ex.: 0,00700 indicaria 3 alg. sig.).</li>
-      </ul>
     </section>
   </div>
 
-  <div class="toast" id="toast">↑/↓ alterna entre científica e decimal. ←/→ muda a, b, c…</div>
+  <div class="toast" id="toast">↑/↓ alterna entre científica e decimal. ←/→ muda exemplo</div>
 
 <script>
-  // ===== Dados dos exercícios (mantissa com ponto; raw preserva vírgula) =====
   const EXS = [
-    // IV
-    { grp:"IV", opt:"a", raw:"7 × 10^-3",      m:7,        e:-3, sig:1 },
-    { grp:"IV", opt:"b", raw:"7,46 × 10^-3",   m:7.46,     e:-3, sig:3 },
-    { grp:"IV", opt:"c", raw:"7 × 10^-5",      m:7,        e:-5, sig:1 },
-    { grp:"IV", opt:"d", raw:"7,00 × 10^-3",   m:7.00,     e:-3, sig:3 },
-    { grp:"IV", opt:"e", raw:"7,00007 × 10^2", m:7.00007,  e: 2, sig:6 },
-    // V
-    { grp:"V", opt:"a", raw:"2,7 × 10^4",      m:2.7,      e: 4, sig:2 },
-    { grp:"V", opt:"b", raw:"2,70000 × 10^4",  m:2.70000,  e: 4, sig:6 },
-    { grp:"V", opt:"c", raw:"2,70 × 10^4",     m:2.70,     e: 4, sig:3 },
-    { grp:"V", opt:"d", raw:"2,700 × 10^4",    m:2.700,    e: 4, sig:4 },
+    { label:"IV-a", raw:"7 × 10^-3",      m:7,        e:-3, sig:1 },
+    { label:"IV-b", raw:"7,46 × 10^-3",   m:7.46,     e:-3, sig:3 },
+    { label:"IV-c", raw:"7 × 10^-5",      m:7,        e:-5, sig:1 },
+    { label:"IV-d", raw:"7,00 × 10^-3",   m:7.00,     e:-3, sig:3 },
+    { label:"IV-e", raw:"7,00007 × 10^2", m:7.00007,  e: 2, sig:6 },
+    { label:"V-a",  raw:"2,7 × 10^4",     m:2.7,      e: 4, sig:2 },
+    { label:"V-b",  raw:"2,7000 × 10^4",  m:2.7000,   e: 4, sig:5 },
+    { label:"V-c",  raw:"2,70 × 10^4",    m:2.70,     e: 4, sig:3 },
+    { label:"V-d",  raw:"2,700 × 10^4",   m:2.700,    e: 4, sig:4 },
   ];
 
-  // estado
-  let i = 0;                         // índice do exemplo
-  let mode = "sci";                  // "sci" | "plain"
-  let sig = EXS[0].sig;
+  let i = 0;
+  let mode = "sci";
 
-  // helpers
   const $ = id => document.getElementById(id);
-  function setText(id, s){ $(id).textContent = s; }
-  function pulse(msg){
-    const t = $("toast"); if (msg) t.textContent = msg;
-    t.classList.add("show"); clearTimeout(pulse._t);
-    pulse._t = setTimeout(()=> t.classList.remove("show"), 1200);
-  }
+  const comma = s => s.replace(/\./g, ",");
+  const hiLast = s => (s.length? s.slice(0,-1)+'<span class="highlight">'+s.slice(-1)+'</span>': s);
 
   function toPrecisionPlain(num, n){
     const s = Number(num).toPrecision(n);
@@ -134,79 +90,38 @@
       return "0." + zeros + digits;
     }
   }
-  const comma = s => s.replace(/\./g, ",");
-  const hiLast = s => (s.length? s.slice(0,-1)+'<span class="highlight">'+s.slice(-1)+'</span>': s);
 
   function valueOf(ex){ return Number(ex.m) * Math.pow(10, ex.e); }
 
   function render(){
     const ex = EXS[i];
-    sig = ex.sig; // ao trocar, assume alg. sig. do item
-    const label = `${ex.grp}-${ex.opt}`;
-    setText("labelNow", label);
-    setText("modeNow", mode === "sci" ? "Notação científica" : "Forma decimal");
-    setText("sfNow", sig);
-    setText("rawText", ex.raw);
-    setText("mantissaText", comma(String(ex.m)));
-    setText("expText", String(ex.e));
+    $("labelNow").textContent = ex.label;
+    $("modeNow").textContent = mode === "sci" ? "Notação científica" : "Forma decimal";
+    $("sfNow").textContent = ex.sig;
 
-    // montar exibição principal e decimal equivalente
-    const mantissa = Number(ex.m).toPrecision(sig);        // mantém zeros significativos
+    const mantissa = Number(ex.m).toPrecision(ex.sig);
     const sciHTML  = hiLast(comma(mantissa)) + " × 10^" + ex.e;
-    const plainStr = comma(toPrecisionPlain(valueOf(ex), sig));
+    const plainStr = comma(toPrecisionPlain(valueOf(ex), ex.sig));
     const plainHTML= hiLast(plainStr);
 
-    // atualiza displays conforme modo
     $("mainDisplay").innerHTML = (mode === "sci") ? sciHTML : plainHTML;
-    setText("plainText", comma(toPrecisionPlain(valueOf(ex), sig)));
-    updateTabs();
   }
 
-  function prev(){ i = (i - 1 + EXS.length) % EXS.length; mode = "sci"; render(); pulse(); }
-  function next(){ i = (i + 1) % EXS.length; mode = "sci"; render(); pulse(); }
-  function flipMode(){ mode = (mode==="sci") ? "plain" : "sci"; render(); pulse(mode==="sci"?"Modo: científica":"Modo: decimal"); }
-  function setGroup(grp){
-    const idx = EXS.findIndex(e => e.grp===grp);
-    if (idx>=0){ i = idx; mode="sci"; render(); }
-  }
-  function setOption(opt){
-    const grp = EXS[i].grp;
-    const idx = EXS.findIndex(e => e.grp===grp && e.opt===opt);
-    if (idx>=0){ i = idx; mode="sci"; render(); pulse(`Exemplo ${grp}-${opt}`); }
-  }
+  function prev(){ i = (i - 1 + EXS.length) % EXS.length; mode = "sci"; render(); }
+  function next(){ i = (i + 1) % EXS.length; mode = "sci"; render(); }
+  function flipMode(){ mode = (mode==="sci") ? "plain" : "sci"; render(); }
 
-  // UI
   $("prevBtn").addEventListener("click", prev);
   $("nextBtn").addEventListener("click", next);
-  $("tabIV").addEventListener("click", ()=>setGroup("IV"));
-  $("tabV").addEventListener("click", ()=>setGroup("V"));
-  document.querySelectorAll('[data-opt]').forEach(b=> b.addEventListener("click", ()=> setOption(b.dataset.opt)));
 
   window.addEventListener("keydown", e=>{
     if (e.key==="ArrowLeft") prev();
     else if (e.key==="ArrowRight") next();
-    else if (e.key==="ArrowUp" || e.key==="ArrowDown") flipMode(); // alterna científica/decimal
+    else if (e.key==="ArrowUp" || e.key==="ArrowDown") flipMode();
     else if (e.key.toLowerCase()==="r"){ i=0; mode="sci"; render(); }
-    // atalhos diretos: 1/2 mudam grupo, a/b/c/d/e mudam opção do grupo atual
-    else if (e.key==="1") setGroup("IV");
-    else if (e.key==="2") setGroup("V");
-    else if (/[abcde]/i.test(e.key)) setOption(e.key.toLowerCase());
   });
 
-  function updateTabs(){
-    // destacar grupo/opt atuais
-    $("tabIV").classList.toggle("active", EXS[i].grp==="IV");
-    $("tabV").classList.toggle("active", EXS[i].grp==="V");
-    document.querySelectorAll('[data-opt]').forEach(b=>{
-      b.classList.toggle("active", b.dataset.opt===EXS[i].opt);
-      // esconde botão "e" quando grupo V (só vai até d)
-      if (b.dataset.opt==="e") b.style.display = (EXS[i].grp==="IV") ? "" : "none";
-    });
-  }
-
-  // init
   render();
-  setTimeout(()=>{ const t=$("toast"); t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 2300); }, 400);
 </script>
 </body>
 </html>
