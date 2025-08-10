@@ -213,10 +213,11 @@
 
     // pista automática baseada no percurso TOTAL (evita acabar no trecho 1)
     if (autoTrack.checked){
-      const s1Km = v1*dt1m/60;
-      const s2Km = v2*dt2m/60;
-      const sTotalM = (s1Km+s2Km)*1000;
-      L = Math.max(20, Math.min(5000, Math.ceil(sTotalM*1.1)));
+    const s1Km = v1*dt1m/60;
+    const s2Km = v2*dt2m/60;
+    const sTotalM = (s1Km+s2Km)*1000;
+    L = Math.max(20, Math.ceil(sTotalM*1.1));
+
     }
     finish.style.right="0px";
 
@@ -302,4 +303,5 @@
 </script>
 </body>
 </html>
+
 
