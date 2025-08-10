@@ -11,19 +11,15 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 20% 0%, #171b35 0%, #0f1222 50%, #0b0e1a 100%);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-  .wrap{max-width:1280px;margin:28px auto 64px;padding:0 18px}
+  .wrap{max-width:1200px;margin:28px auto 64px;padding:0 18px}
   h1{margin:0 0 8px;font-size:clamp(22px,3vw,30px)}
   .muted{color:var(--muted)}
-  .grid{
-    display:grid;
-    grid-template-columns:1.45fr 0.55fr; /* mais espaço à esquerda */
-    gap:24px;                             /* mais respiro entre colunas */
-    align-items:start;
-  }
-  @media (max-width:1100px){ .grid{grid-template-columns:1fr} }
+  .grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+  @media (max-width:1050px){ .grid{grid-template-columns:1fr} }
   .card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.07);border-radius:14px;box-shadow:var(--shadow);padding:14px}
   .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-  .controls{display:grid;grid-template-columns:1fr;gap:10px}
+  .controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  @media (max-width:640px){ .controls{grid-template-columns:1fr} }
   .field{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px}
   .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
   .field input[type="range"]{width:100%}
@@ -34,24 +30,20 @@
   .btn.red{background:linear-gradient(180deg,#7a1f1f,#5d1717);border-color:#b43b3b}
   .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.25);color:#bfdbfe;padding:8px 12px;border-radius:999px;font-size:14px}
   .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono";background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);padding:1px 6px;border-radius:6px;font-size:12px;color:#e5e7eb}
-  /* palco */
+  /* pista */
   .stage{background:linear-gradient(180deg,#0b101e,#0f1526);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px}
-  .road{position:relative;height:170px;background:linear-gradient(180deg,#303744,#242b36);border-radius:10px;overflow:hidden}
+  .road{position:relative;height:160px;background:linear-gradient(180deg,#303744,#242b36);border-radius:10px;overflow:hidden}
   .lane{position:absolute;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg, rgba(255,255,255,.6) 0 28px, transparent 28px 56px);top:50%;transform:translateY(-50%);opacity:.5}
-  .car{position:absolute;bottom:18px;left:0;width:84px;height:38px;background:linear-gradient(180deg,#60a5fa,#3b82f6);border:2px solid rgba(255,255,255,.35);border-radius:10px 10px 8px 8px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .car{position:absolute;bottom:16px;left:0;width:80px;height:36px;background:linear-gradient(180deg,#60a5fa,#3b82f6);border:2px solid rgba(255,255,255,.35);border-radius:10px 10px 8px 8px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
   .wheel{position:absolute;bottom:-8px;width:18px;height:18px;background:#111;border-radius:50%;border:2px solid #444}
-  .wheel.left{left:12px} .wheel.right{right:14px}
-  .finish{position:absolute;right:0;top:0;bottom:0;width:8px;background:repeating-linear-gradient(0deg,#ddd 0 10px,#111 10px 20px)}
+  .wheel.left{left:12px} .wheel.right{right:12px}
+  .finish{position:absolute;right:0;top:0;bottom:0;width:6px;background:repeating-linear-gradient(0deg,#ddd 0 10px,#111 10px 20px)}
   /* gráficos */
-  .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}
-  @media (max-width:900px){ .charts{grid-template-columns:1fr} }
-  .chartWrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px}
-  canvas{display:block;width:100%;height:260px;border-radius:8px}
+  .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  @media (max-width:880px){ .charts{grid-template-columns:1fr} }
+  canvas{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px}
   .formula{font-size:14px;color:#dbe7ff}
   .muted small{font-size:12px}
-  .rightPanel{position:sticky; top:12px} /* “cola” a coluna direita */
-  .row.gap8{gap:8px}
-  .hint{font-size:12px;color:#aab4c3}
 </style>
 </head>
 <body>
@@ -78,14 +70,14 @@
         <div class="finish" id="finish"></div>
       </div>
 
-      <div class="charts">
-        <div class="chartWrap"><canvas id="vt" aria-label="gráfico velocidade-tempo"></canvas></div>
-        <div class="chartWrap"><canvas id="st" aria-label="gráfico posição-tempo"></canvas></div>
+      <div class="charts" style="margin-top:12px">
+        <canvas id="vt" width="600" height="220" aria-label="gráfico velocidade-tempo"></canvas>
+        <canvas id="st" width="600" height="220" aria-label="gráfico posição-tempo"></canvas>
       </div>
     </section>
 
     <!-- Direita: controles e fórmulas -->
-    <aside class="card rightPanel">
+    <aside class="card">
       <div class="controls">
         <div class="field">
           <label>Velocidade inicial v₀ (m/s)</label>
@@ -104,16 +96,8 @@
         </div>
         <div class="field">
           <label>Comprimento da pista (m)</label>
-          <input type="range" id="L" min="20" max="1000" step="5" value="300">
-          <div class="row"><span class="muted">Atual:</span><strong id="LVal">300</strong> m</div>
-          <div class="hint">Dica: com <b>pista automática</b> desligada, você controla aqui.</div>
-        </div>
-        <div class="field">
-          <label>Pista automática</label>
-          <div class="row gap8">
-            <input type="checkbox" id="autoTrack" checked>
-            <span class="muted">Ajusta o comprimento da pista para caber <i>s(T)</i> com 10% de folga.</span>
-          </div>
+          <input type="range" id="L" min="20" max="300" step="5" value="120">
+          <div class="row"><span class="muted">Atual:</span><strong id="LVal">120</strong> m</div>
         </div>
       </div>
 
@@ -128,14 +112,14 @@
         <div><b>Fórmulas</b></div>
         <div>v(t) = v₀ + a·t</div>
         <div>s(t) = s₀ + v₀·t + ½·a·t²</div>
-        <div style="margin-top:6px"><small class="muted">Enunciado: v₀=0, v(12s)=40 m/s (144 km/h) ⇒ a ≈ 3,33 m/s².</small></div>
+        <div style="margin-top:6px"><small class="muted">Para o enunciado: v₀=0, v(12s)=40 m/s (144 km/h) ⇒ a = (40 − 0)/12 ≈ 3,33 m/s².</small></div>
       </div>
     </aside>
   </div>
 </div>
 
 <script>
-  // ===== Referências =====
+  // ===== Estado físico / simulação =====
   const road = document.getElementById('road');
   const carEl = document.getElementById('car');
   const finishEl = document.getElementById('finish');
@@ -144,7 +128,6 @@
   const aSlider  = document.getElementById('a');
   const TSlider  = document.getElementById('T');
   const LSlider  = document.getElementById('L');
-  const autoTrack = document.getElementById('autoTrack');
 
   const v0Val = document.getElementById('v0Val');
   const v0Kmh = document.getElementById('v0Kmh');
@@ -168,139 +151,114 @@
   const ctxV = vt.getContext('2d');
   const ctxS = st.getContext('2d');
 
-  // ===== Estado =====
   let running = false;
-  let t = 0;         // tempo
+  let t = 0;         // tempo (s)
   let v0 = +v0Slider.value; // m/s
   let a  = +aSlider.value;  // m/s²
-  let T  = +TSlider.value;  // s
-  let L  = +LSlider.value;  // m
-  let s0 = 0;        // m
-  let s  = 0;        // m
-  let lastTs = null;
+  let T  = +TSlider.value;  // s (duração alvo)
+  let L  = +LSlider.value;  // m (pista)
+  let s0 = 0;        // posição inicial (m)
+  let s  = 0;        // posição atual (m)
+  let lastTs = null; // timestamp último frame
+  const pxPerM = () => (road.clientWidth - 100) / L; // 100px para margem/chegada
 
   function mpsToKmh(x){ return x*3.6; }
 
-  // ===== Canvas responsivo =====
-  function resizeCanvases(){
-    [vt, st].forEach(canvas=>{
-      const parent = canvas.parentElement.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(parent.width * dpr);
-      canvas.height = Math.floor(260 * dpr);
-      canvas.style.width = parent.width + "px";
-      canvas.style.height = "260px";
-      (canvas === vt ? drawAxesV : drawAxesS)();
-    });
+  function setFinish(){
+    finishEl.style.right = "0px";
   }
-  window.addEventListener('resize', ()=>{ resizeCanvases(); redrawSeries(); });
-
-  function pxPerM(){ return (road.clientWidth - 110) / L; } // 110px margem até a chegada
-  function setFinish(){ finishEl.style.right = "0px"; }
 
   function stateFromSliders(){
     v0 = +v0Slider.value;
     a  = +aSlider.value;
     T  = +TSlider.value;
+    L  = +LSlider.value;
 
-    // pista automática: L -> s(T)*1.1 (com limites)
-    if (autoTrack.checked){
-      const sT = s0 + v0*T + 0.5*a*T*T;
-      L = Math.max(20, Math.min(1000, Math.ceil(sT*1.1)));
-      LSlider.value = L;
-    } else {
-      L = +LSlider.value;
-    }
-
-    // labels
     v0Val.textContent = v0.toFixed(1);
     v0Kmh.textContent = mpsToKmh(v0).toFixed(1);
     aVal.textContent  = a.toFixed(3);
     TVal.textContent  = T.toFixed(1);
-    LVal.textContent  = Math.round(L);
+    LVal.textContent  = L.toFixed(0);
 
     aLabel.textContent = a.toFixed(2) + " m/s²";
     setFinish();
   }
 
-  // ===== Física =====
   function physicsStep(dt){
+    // MRUV equações
     t += dt;
     if (t > T) { t = T; running = false; }
     const v = v0 + a*t;
     s = s0 + v0*t + 0.5*a*t*t;
 
-    // UI
+    // UI labels
     tLabel.textContent = t.toFixed(2) + " s";
     vLabel.textContent = v.toFixed(2) + " m/s";
     vKmhLabel.textContent = mpsToKmh(v).toFixed(2) + " km/h";
     sLabel.textContent = s.toFixed(2) + " m";
 
-    // movimento do carro (não ultrapassa a chegada)
-    const x = Math.min(s, L);
-    carEl.style.left = (x * pxPerM()) + "px";
+    // carro na pista
+    const x = Math.min(s, L); // não passa da linha de chegada
+    const xpx = x * pxPerM();
+    carEl.style.left = (xpx) + "px";
 
-    // gráficos
+    // desenhar gráficos
     pushPlot(t, v, s);
   }
 
-  // ===== Gráficos =====
+  // ===== Gráficos simples (sem libs) =====
   const plot = { t:[], v:[], s:[] };
+  function resetPlot(){
+    plot.t.length = 0; plot.v.length = 0; plot.s.length = 0;
+    drawAxes(ctxV, vt, "v (m/s)", "t (s)");
+    drawAxes(ctxS, st, "s (m)", "t (s)");
+  }
 
-  function clearAll(ctx){ ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height); }
-
-  function drawAxes(ctx, ylabel, xlabel){
-    clearAll(ctx);
-    const cw = ctx.canvas.width, ch = ctx.canvas.height;
-    const dpr = window.devicePixelRatio || 1;
-    const x0 = 50*dpr, y0 = 20*dpr, w = (cw - 80*dpr), h = (ch - 70*dpr);
-
+  function drawAxes(ctx, canvas, ylabel, xlabel){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.save();
     ctx.strokeStyle = "rgba(255,255,255,.25)";
-    ctx.lineWidth = 1*dpr;
-    ctx.strokeRect(x0, y0, w, h);
+    ctx.lineWidth = 1;
+    // borda
+    ctx.strokeRect(40, 10, canvas.width-60, canvas.height-50);
+    // labels
     ctx.fillStyle = "rgba(230,235,242,.9)";
-    ctx.font = (12*dpr) + "px ui-monospace, monospace";
-    ctx.fillText(xlabel, x0 + w/2 - 20*dpr, y0 + h + 30*dpr);
+    ctx.font = "12px ui-monospace, monospace";
+    ctx.fillText(xlabel, canvas.width/2-15, canvas.height-12);
     ctx.save();
-    ctx.translate(16*dpr, y0 + h/2 + 20*dpr);
+    ctx.translate(12, canvas.height/2+20);
     ctx.rotate(-Math.PI/2);
     ctx.fillText(ylabel, 0, 0);
     ctx.restore();
     ctx.restore();
   }
-  function drawAxesV(){ drawAxes(ctxV, "v (m/s)", "t (s)"); }
-  function drawAxesS(){ drawAxes(ctxS, "s (m)", "t (s)"); }
 
   function pushPlot(tNow, vNow, sNow){
     plot.t.push(tNow); plot.v.push(vNow); plot.s.push(sNow);
-    redrawSeries();
-  }
-
-  function redrawSeries(){
     const tMax = Math.max(T, 1);
-    drawAxesV(); drawAxesS();
-    drawSeries(ctxV, plot.t, plot.v, 0, tMax);
-    drawSeries(ctxS, plot.t, plot.s, 0, tMax);
+
+    drawAxes(ctxV, vt, "v (m/s)", "t (s)");
+    drawAxes(ctxS, st, "s (m)", "t (s)");
+
+    drawSeries(ctxV, vt, plot.t, plot.v, 0, tMax);
+    drawSeries(ctxS, st, plot.t, plot.s, 0, tMax);
   }
 
-  function drawSeries(ctx, xs, ys, xmin, xmax){
+  function drawSeries(ctx, canvas, xs, ys, xmin, xmax){
     if (xs.length < 2) return;
-    const dpr = window.devicePixelRatio || 1;
-    const cw = ctx.canvas.width, ch = ctx.canvas.height;
-    const x0 = 50*dpr, y0 = 20*dpr, w = (cw - 80*dpr), h = (ch - 70*dpr);
-
     const ymin = Math.min(...ys, 0);
     const ymax = Math.max(...ys, ys[ys.length-1]||0, 1);
+    const plotW = canvas.width - 60, plotH = canvas.height - 50;
+    const x0 = 40, y0 = 10;
 
     ctx.save();
     ctx.beginPath();
     for (let i=0;i<xs.length;i++){
-      const x = x0 + ((xs[i]-xmin)/(xmax-xmin)) * w;
-      const y = y0 + h - ((ys[i]-ymin)/(ymax-ymin || 1)) * h;
+      const x = x0 + ( (xs[i]-xmin)/(xmax-xmin) ) * plotW;
+      const y = y0 + plotH - ( (ys[i]-ymin)/(ymax-ymin || 1) ) * plotH;
       if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     }
-    ctx.lineWidth = 2*dpr;
+    ctx.lineWidth = 2;
     ctx.strokeStyle = "rgba(110,231,183,.9)";
     ctx.stroke();
     ctx.restore();
@@ -320,33 +278,28 @@
   function play(){ if (!running && t < T){ running = true; lastTs = null; requestAnimationFrame(frame); } }
   function pause(){ running = false; }
   function reset(){
-    running = false; t = 0; s = 0; lastTs = null;
+    running = false; t = 0; s = 0; s0 = 0; lastTs = null;
     carEl.style.left = "0px";
     tLabel.textContent = "0.00 s";
     vLabel.textContent = v0.toFixed(2) + " m/s";
     vKmhLabel.textContent = mpsToKmh(v0).toFixed(2) + " km/h";
     sLabel.textContent = "0.00 m";
-    plot.t.length = plot.v.length = plot.s.length = 0;
-    resizeCanvases(); // redesenha eixos
+    resetPlot();
   }
 
   // ===== Eventos =====
-  function onParamsChanged(){
-    stateFromSliders();
-    reset();
-  }
-  [v0Slider,aSlider,TSlider,LSlider,autoTrack].forEach(sl=> sl.addEventListener('input', onParamsChanged));
-
+  [v0Slider,aSlider,TSlider,LSlider].forEach(sl=>{
+    sl.addEventListener('input', ()=>{ stateFromSliders(); reset(); });
+  });
   playBtn.addEventListener('click', play);
   pauseBtn.addEventListener('click', pause);
   resetBtn.addEventListener('click', reset);
   exerciseBtn.addEventListener('click', ()=>{
     v0Slider.value = 0;
-    aSlider.value  = (40/12).toFixed(3); // ~3.333
+    aSlider.value  = 40/12; // ~3.333...
     TSlider.value  = 12;
-    // com pista automática, L ajusta; se manual, define 300 m
-    if (!autoTrack.checked) LSlider.value = 300;
-    onParamsChanged();
+    LSlider.value  = 120;
+    stateFromSliders(); reset();
   });
 
   window.addEventListener('keydown', (e)=>{
@@ -357,7 +310,6 @@
 
   // init
   stateFromSliders();
-  resizeCanvases();
   reset();
 </script>
 </body>
