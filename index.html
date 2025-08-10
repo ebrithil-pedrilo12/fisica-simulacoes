@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simulações — Aula 1 (Física)</title>
+<style>
+  :root{
+    --bg:#0f1222; --panel:#171b35; --text:#e6ebf2; --muted:#9aa3b2; --accent:#60a5fa; --accent2:#6ee7b7;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 20% 0%, #171b35 0%, #0f1222 50%, #0b0e1a 100%);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:1100px;margin:32px auto 64px;padding:0 18px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:18px}
+  h1{margin:0;font-size:clamp(22px,3vw,30px)}
+  .muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .card{
+    background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;
+  }
+  .thumb{
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, rgba(96,165,250,.25), rgba(110,231,183,.18));
+    border-bottom:1px solid rgba(255,255,255,.08);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; letter-spacing:.4px; color:#dbeafe;
+  }
+  .body{padding:14px 14px 12px}
+  .title{font-size:18px;margin:0 0 6px}
+  .desc{margin:0 0 10px;color:var(--muted)}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono"; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); border-radius:6px; padding:1px 6px; font-size:12px; color:#e5e7eb}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+  .btn{
+    appearance:none; cursor:pointer;
+    background:linear-gradient(180deg,#1c2347,#141a36);
+    color:#e6ebf2; border:1px solid rgba(255,255,255,.14);
+    border-radius:10px; padding:9px 12px; font-weight:600; text-decoration:none; display:inline-flex; gap:8px; align-items:center;
+  }
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:rgba(110,231,183,.12);border:1px solid rgba(110,231,183,.3);color:#bbf7d0;padding:6px 10px;border-radius:999px;font-size:13px}
+  footer{margin-top:18px;color:var(--muted);font-size:14px}
+  .small{font-size:13px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Simulações — Aula 1</h1>
+      <span class="muted small">Clique em um cartão para abrir a atividade em nova aba.</span>
+    </header>
+
+    <div class="grid">
+      <!-- 1. Balança — Algarismos significativos (versão interativa com exemplos) -->
+      <article class="card">
+        <div class="thumb">Algarismos Significativos</div>
+        <div class="body">
+          <h2 class="title">Balança digital — exemplos da aula</h2>
+          <p class="desc">Explore como o número de algarismos significativos afeta a leitura. O último dígito significativo fica destacado.</p>
+          <div class="row">
+            <span class="pill">Atalhos: <span class="kbd">←/→</span> exemplo · <span class="kbd">↑/↓</span> alg. sig. · <span class="kbd">R</span> reset</span>
+            <a class="btn" href="balanca_tabela_destaque.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 2. Notação científica — contar algarismos -->
+      <article class="card">
+        <div class="thumb">Notação Científica</div>
+        <div class="body">
+          <h2 class="title">Notação científica — determine os algarismos</h2>
+          <p class="desc">Veja a mantissa × 10^expoente e alterne para a forma decimal. Treine a contagem correta de algarismos significativos.</p>
+          <div class="row">
+            <span class="pill">Atalhos: <span class="kbd">←/→</span> item · <span class="kbd">↑/↓</span> científica/decimal · <span class="kbd">R</span> reset</span>
+            <a class="btn" href="notacao_cientifica_exercicios.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 3. MRUV — Carro acelerando -->
+      <article class="card">
+        <div class="thumb">MRUV — Carro</div>
+        <div class="body">
+          <h2 class="title">MRUV — carro de 0 a 144 km/h em 12 s</h2>
+          <p class="desc">Simulação do movimento uniformemente variado com gráficos v×t e s×t. Pista automática para acomodar a distância.</p>
+          <div class="row">
+            <span class="pill">Atalhos: <span class="kbd">Espaço</span> play/pausa · <span class="kbd">R</span> reset · <span class="kbd">E</span> valores do enunciado</span>
+            <a class="btn" href="mruv_carro.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 4. MU — João (2 trechos) -->
+      <article class="card">
+        <div class="thumb">MU — João</div>
+        <div class="body">
+          <h2 class="title">Movimento uniforme — João (2 trechos)</h2>
+          <p class="desc">Velocidades constantes por trecho, distância total e velocidade média. Gráficos s×t (troca de inclinação) e v×t (degrau).</p>
+          <div class="row">
+            <span class="pill">Atalhos: <span class="kbd">Espaço</span> play/pausa · <span class="kbd">R</span> reset</span>
+            <a class="btn" href="mru_joao.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <footer>
+      Dica: publique este arquivo como <strong>index.html</strong> na raiz do repositório.<br/>
+      URL do site: <span class="small">https://ebrithil-pedrilo12.github.io/fisica-simulacoes/</span>
+    </footer>
+  </div>
+</body>
+</html>
