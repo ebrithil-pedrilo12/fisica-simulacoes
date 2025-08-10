@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MU — Problema 3 (2 trechos)</title>
+<title>MU — (2 trechos)</title>
 <style>
   :root{
     --bg:#0e1324; --panel:#141a33; --text:#e6ebf2; --muted:#9aa3b2;
@@ -45,23 +45,24 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>MU — MU — Problema 3 (2 trechos)</h1>
+  <h1>MU — Exercicio 3</h1>
   <div class="muted">Atalhos: <span class="kbd">Espaço</span> play/pausa · <span class="kbd">R</span> reset</div>
 
   <div class="grid" style="margin-top:14px">
     <section class="card stage">
       <div class="row" style="justify-content:space-between; margin-bottom:8px">
         <span class="pill">t: <strong id="tLabel">0:00</strong></span>
-        <span class="pill">v: <strong id="vLabel">0.00 m/s</strong> (<strong id="vKmh">0.00 km/h</strong>)</span>
-        <span class="pill">s trecho: <strong id="sSegLabel">0.00 km</strong></span>
+        <span class="pill">v inst.: <strong id="vLabel">0.00 m/s</strong> (<strong id="vKmh">0.00 km/h</strong>)</span>
+        <span class="pill">s₁: <strong id="s1Label">0.00 km</strong></span>
+        <span class="pill">s₂: <strong id="s2Label">0.00 km</strong></span>
         <span class="pill">s total: <strong id="sTotLabel">0.00 km</strong></span>
+        <span class="pill">v̄ (até agora): <strong id="vavgNow">—</strong> km/h</span>
+        <span class="pill">v̄ (total): <strong id="vavgTotal">—</strong> km/h</span>
       </div>
 
       <div class="road" id="road">
         <div class="lane"></div>
-        <div class="bike" id="bike">
-          <div class="wheel l"></div><div class="wheel r"></div>
-        </div>
+        <div class="bike" id="bike"><div class="wheel l"></div><div class="wheel r"></div></div>
         <div class="finish" id="finish"></div>
       </div>
 
@@ -98,14 +99,20 @@
         <label>Pista automática</label>
         <div class="row" style="gap:8px">
           <input type="checkbox" id="autoTrack" checked>
-          <span class="muted">Ajusta o comprimento para caber o percurso total (com 10% de folga).</span>
+          <span class="muted">Usa s₁+s₂ (com 10% de folga) p/ definir o comprimento da pista.</span>
         </div>
+      </div>
+
+      <div class="field">
+        <label>Velocidade da simulação (×)</label>
+        <input type="range" id="speed" min="1" max="120" step="1" value="30">
+        <div class="row"><span class="muted">Atual:</span><strong id="speedVal">30×</strong></div>
       </div>
 
       <div class="field">
         <div><b>Fórmulas (MU)</b></div>
         <div>s = v · t  &nbsp; (por trecho)</div>
-        <div>v̄ = s<sub>total</sub> / t<sub>total</sub></div>
+        <div>v̄ = s<sub>total</sub> / t<sub>total</sub> = (v₁·Δt₁ + v₂·Δt₂) / (Δt₁ + Δt₂)</div>
       </div>
     </aside>
   </div>
@@ -120,21 +127,25 @@
 
   // ==== refs ====
   const road = $("road"), bike = $("bike"), finish = $("finish");
-  const tLabel = $("tLabel"), vLabel = $("vLabel"), vKmh = $("vKmh");
-  const sSegLabel = $("sSegLabel"), sTotLabel = $("sTotLabel");
-  const v1S = $("v1"), t1S = $("t1"), v2S = $("v2"), t2S = $("t2"), autoTrack = $("autoTrack");
-  const v1Val = $("v1Val"), t1Val = $("t1Val"), v2Val = $("v2Val"), t2Val = $("t2Val");
-  const playBtn = $("playBtn"), pauseBtn = $("pauseBtn"), resetBtn = $("resetBtn");
-  const st = $("st"), vt = $("vt"), ctxS = st.getContext("2d"), ctxV = vt.getContext("2d");
+  const tLabel=$("tLabel"), vLabel=$("vLabel"), vKmh=$("vKmh");
+  const s1Label=$("s1Label"), s2Label=$("s2Label"), sTotLabel=$("sTotLabel");
+  const vavgNow=$("vavgNow"), vavgTotal=$("vavgTotal");
+
+  const v1S=$("v1"), t1S=$("t1"), v2S=$("v2"), t2S=$("t2"), autoTrack=$("autoTrack");
+  const v1Val=$("v1Val"), t1Val=$("t1Val"), v2Val=$("v2Val"), t2Val=$("t2Val");
+  const speed=$("speed"), speedVal=$("speedVal");
+
+  const playBtn=$("playBtn"), pauseBtn=$("pauseBtn"), resetBtn=$("resetBtn");
+  const st=$("st"), vt=$("vt"), ctxS=st.getContext("2d"), ctxV=vt.getContext("2d");
 
   // ==== estado ====
-  let v1 = +v1S.value, v2 = +v2S.value; // km/h
-  let dt1m = +t1S.value, dt2m = +t2S.value; // min
-  let T = minToSec(dt1m + dt2m); // s
-  let running = false, t = 0; // s
-  let sTot = 0, sSeg = 0, seg = 1;
-  let lastTs = null;
-  let L = 200; // m (comprimento pista)
+  let v1=+v1S.value, v2=+v2S.value; // km/h
+  let dt1m=+t1S.value, dt2m=+t2S.value; // min
+  let T=minToSec(dt1m+dt2m); // s
+  let running=false, t=0; // s
+  let s1=0, s2=0, sTot=0; // m
+  let seg=1, lastTs=null;
+  let L=200; // m (pista)
   const pxPerM = () => (road.clientWidth - 110)/L;
 
   // ==== canvas responsivo ====
@@ -147,8 +158,7 @@
       c.style.width = parent.width + "px";
       c.style.height = "260px";
     });
-    drawAxes();
-    redraw();
+    drawAxes(); redraw();
   }
   window.addEventListener("resize", resizeCanvases);
 
@@ -170,115 +180,112 @@
 
   const plot = {t:[], s:[], v:[]};
   function resetPlot(){ plot.t.length=plot.s.length=plot.v.length=0; drawAxes(); }
-
   function pushPoint(tSec, sKm, vKmhNow){
-    plot.t.push(tSec/60);
-    plot.s.push(sKm);
-    plot.v.push(vKmhNow);
-    redraw();
+    plot.t.push(tSec/60); plot.s.push(sKm); plot.v.push(vKmhNow); redraw();
   }
-
   function redraw(){
-    drawAxes();
-    drawSeries(ctxS, plot.t, plot.s);
-    drawSeries(ctxV, plot.t, plot.v);
+    drawAxes(); drawSeries(ctxS, plot.t, plot.s); drawSeries(ctxV, plot.t, plot.v);
   }
-
   function drawSeries(ctx, xs, ys){
     if (xs.length<2) return;
-    const dpr = window.devicePixelRatio || 1;
-    const cw=ctx.canvas.width, ch=ctx.canvas.height;
+    const dpr=window.devicePixelRatio||1, cw=ctx.canvas.width, ch=ctx.canvas.height;
     const x0=50*dpr, y0=20*dpr, w=cw-80*dpr, h=ch-70*dpr;
     const xmin=0, xmax=Math.max(xs[xs.length-1], (dt1m+dt2m));
     const ymin=Math.min(...ys, 0), ymax=Math.max(...ys, 1);
-    ctx.save();
-    ctx.beginPath();
+    ctx.save(); ctx.beginPath();
     for(let i=0;i<xs.length;i++){
-      const x = x0 + ((xs[i]-xmin)/(xmax-xmin))*w;
-      const y = y0 + h - ((ys[i]-ymin)/(ymax-ymin||1))*h;
+      const x=x0+((xs[i]-xmin)/(xmax-xmin))*w;
+      const y=y0+h-((ys[i]-ymin)/(ymax-ymin||1))*h;
       if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     }
-    ctx.lineWidth=2*dpr; ctx.strokeStyle="rgba(110,231,183,.9)"; ctx.stroke();
-    ctx.restore();
+    ctx.lineWidth=2*dpr; ctx.strokeStyle="rgba(110,231,183,.9)"; ctx.stroke(); ctx.restore();
   }
 
   // ==== lógica ====
   function updateFromUI(){
-    v1 = +v1S.value; v2 = +v2S.value;
-    dt1m = +t1S.value; dt2m = +t2S.value;
-    v1Val.textContent = v1.toFixed(1); v2Val.textContent = v2.toFixed(1);
-    t1Val.textContent = dt1m; t2Val.textContent = dt2m;
-    T = minToSec(dt1m + dt2m);
+    v1=+v1S.value; v2=+v2S.value;
+    dt1m=+t1S.value; dt2m=+t2S.value;
+    v1Val.textContent=v1.toFixed(1); v2Val.textContent=v2.toFixed(1);
+    t1Val.textContent=dt1m; t2Val.textContent=dt2m;
+    speedVal.textContent=speed.value+"×";
 
-    // pista automática
+    T=minToSec(dt1m+dt2m);
+
+    // pista automática baseada no percurso TOTAL (evita acabar no trecho 1)
     if (autoTrack.checked){
-      const s1 = v1*dt1m/60; // km
-      const s2 = v2*dt2m/60; // km
-      const sTotalKm = s1 + s2;
-      const sTotalM = sTotalKm*1000;
-      L = Math.max(20, Math.min(2000, Math.ceil(sTotalM*1.1)));
+      const s1Km = v1*dt1m/60;
+      const s2Km = v2*dt2m/60;
+      const sTotalM = (s1Km+s2Km)*1000;
+      L = Math.max(20, Math.min(5000, Math.ceil(sTotalM*1.1)));
     }
     finish.style.right="0px";
+
+    // v média total (parâmetros)
+    const vavgTot = (v1*dt1m + v2*dt2m) / (dt1m + dt2m); // km/h
+    vavgTotal.textContent = vavgTot.toFixed(2);
   }
 
   function resetAll(){
-    running=false; t=0; seg=1; sTot=0; sSeg=0; lastTs=null;
+    running=false; t=0; seg=1; s1=0; s2=0; sTot=0; lastTs=null;
     bike.style.left="0px";
     tLabel.textContent="0:00";
     vLabel.textContent="0.00 m/s"; vKmh.textContent="0.00 km/h";
-    sSegLabel.textContent="0.00 km"; sTotLabel.textContent="0.00 km";
+    s1Label.textContent="0.00 km"; s2Label.textContent="0.00 km"; sTotLabel.textContent="0.00 km";
+    vavgNow.textContent="—";
     resetPlot();
   }
 
   function step(dt){
-    // qual trecho estamos?
-    const t1 = minToSec(dt1m);
-    const vNowKmh = (t < t1)? v1 : v2;
+    // qual trecho?
+    const t1s = minToSec(dt1m);
+    const vNowKmh = (t < t1s)? v1 : v2;
     const vNowMps = kmhToMps(vNowKmh);
 
-    // avanço
+    // avanço temporal
     t += dt;
     if (t > T){ t = T; running=false; }
 
+    // avanço espacial
     const ds = vNowMps * dt; // m
     sTot += ds;
-    // s no trecho
-    if (t <= t1) { sSeg += ds; seg=1; }
-    else {
-      if (seg===1){ sSeg = 0; seg=2; }
-      sSeg += ds;
-    }
+    if (t <= t1s){ s1 += ds; seg=1; } else { seg=2; s2 += ds; }
 
     // posição na pista
-    const x = Math.min(sTot, L); // m
+    const x = Math.min(sTot, L);
     bike.style.left = (x * pxPerM()) + "px";
 
     // labels
     const mm = Math.floor(t/60), ss = Math.floor(t%60);
-    tLabel.textContent = `${String(mm).padStart(1,'0')}:${String(ss).padStart(2,'0')}`;
+    tLabel.textContent = `${mm}:${String(ss).padStart(2,'0')}`;
     vLabel.textContent = vNowMps.toFixed(2) + " m/s";
     vKmh.textContent  = vNowKmh.toFixed(2) + " km/h";
-    sSegLabel.textContent = (sSeg/1000).toFixed(2) + " km";
-    sTotLabel.textContent = (sTot/1000).toFixed(2) + " km";
+    s1Label.textContent = (s1/1000).toFixed(2) + " km";
+    s2Label.textContent = (s2/1000).toFixed(2) + " km";
+    sTotLabel.textContent= (sTot/1000).toFixed(2) + " km";
 
-    // gráficos: s total (km) e v (km/h)
+    // v média até agora (se t>0)
+    if (t>0){
+      const vavgNowVal = ( (sTot/1000) / (t/3600) ); // km/h
+      vavgNow.textContent = vavgNowVal.toFixed(2);
+    }
+
+    // gráficos
     pushPoint(t, sTot/1000, vNowKmh);
   }
 
   function frame(ts){
-      if (lastTs==null) lastTs=ts;
-      const speedFactor = 50; // controle de velocidade da simulação
-      const dt = Math.min(0.05, (ts-lastTs)/1000) * speedFactor;
-      lastTs=ts;
-      if (running){ step(dt); requestAnimationFrame(frame); }
+    if (lastTs==null) lastTs=ts;
+    const dtReal = Math.min(0.05, (ts-lastTs)/1000);
+    lastTs=ts;
+    const speedFactor = +speed.value; // 1×..120×
+    if (running){ step(dtReal * speedFactor); requestAnimationFrame(frame); }
   }
-
 
   function play(){ if(!running && t<T){ running=true; lastTs=null; requestAnimationFrame(frame); } }
   function pause(){ running=false; }
 
   // ==== eventos ====
-  [v1S,t1S,v2S,t2S,autoTrack].forEach(el=> el.addEventListener('input', ()=>{ updateFromUI(); resetAll(); }));
+  [v1S,t1S,v2S,t2S,autoTrack,speed].forEach(el=> el.addEventListener('input', ()=>{ updateFromUI(); resetAll(); }));
   playBtn.addEventListener('click', play);
   pauseBtn.addEventListener('click', pause);
   resetBtn.addEventListener('click', ()=>{ updateFromUI(); resetAll(); });
@@ -295,5 +302,3 @@
 </script>
 </body>
 </html>
-
-
