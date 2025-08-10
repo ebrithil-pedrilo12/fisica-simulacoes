@@ -1,208 +1,212 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Balança Digital — Algarismos Significativos (Tabela da Aula)</title>
-  <style>
-    :root{ --bg:#0f1222; --panel:#171b35; --muted:#9aa3b2; --text:#e6ebf2; --accent:#6ee7b7; --accent-2:#60a5fa; --danger:#f87171; --shadow:0 10px 30px rgba(0,0,0,.35) }
-    *{box-sizing:border-box}
-    html,body{height:100%;background:radial-gradient(1200px 600px at 20% 0%, #171b35 0%, #0f1222 50%, #0b0e1a 100%);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";margin:0}
-    .wrap{max-width:1100px;margin:32px auto 64px;padding:0 20px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
-    header h1{font-size:clamp(20px,3vw,28px);margin:0;letter-spacing:.2px}
-    header .hint{color:var(--muted);font-size:14px;opacity:.9}
-    .grid{display:grid;grid-template-columns:1.2fr .9fr;gap:18px}
-    @media (max-width:920px){.grid{grid-template-columns:1fr}}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.06);border-radius:14px;box-shadow:var(--shadow);padding:16px}
-    .label{color:var(--muted);font-size:13px;letter-spacing:.3px;text-transform:uppercase}
-    .stack{display:flex;flex-direction:column;gap:10px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .grow{flex:1}
-    .btn{appearance:none;background:linear-gradient(180deg,#1b2242,#141a35);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer;transition:transform .03s,background .2s}
-    .btn:active{transform:translateY(1px) scale(.99)}
-    .btn.secondary{background:linear-gradient(180deg,#13203a,#0f192e)}
-    .btn.ghost{background:transparent;border-color:rgba(255,255,255,.18);color:var(--muted);font-weight:500}
-    .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.25);color:#bfdbfe;padding:8px 12px;border-radius:999px;font-size:14px}
-    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono";background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);padding:1px 6px;border-radius:6px;font-size:12px;color:#e5e7eb}
-    .scale{display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:12px;background:linear-gradient(180deg,#0b101e,#0f1526);border:1px solid rgba(255,255,255,.06)}
-    .display{background:#0b0f13;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:18px 18px;min-height:84px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:inset 0 0 18px rgba(0,0,0,.6)}
-    .digits{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:clamp(28px,6vw,54px);letter-spacing:.06em;color:#a7f3d0;text-shadow:0 0 6px rgba(110,231,183,.55),0 0 22px rgba(110,231,183,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .unit{margin-left:12px;font-weight:600;color:#93c5fd;text-shadow:0 0 10px rgba(96,165,250,.35);white-space:nowrap}
-    .meta{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media (max-width:520px){.meta{grid-template-columns:1fr}}
-    .meta .rowmeta{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(11,15,19,.9);color:#e5e7eb;border:1px solid rgba(255,255,255,.12);padding:10px 14px;border-radius:10px;box-shadow:var(--shadow);opacity:0;transition:opacity .25s ease;pointer-events:none;font-size:14px}
-    .toast.show{opacity:1}
-    footer{margin-top:14px;color:var(--muted);font-size:13px}
-    code.inline{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono"}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notação Científica — Exercícios IV e V</title>
+<style>
+  :root{ --bg:#0f1222; --panel:#171b35; --muted:#9aa3b2; --text:#e6ebf2; --accent:#6ee7b7; --accent-2:#60a5fa; --shadow:0 10px 30px rgba(0,0,0,.35) }
+  *{box-sizing:border-box}
+  html,body{height:100%;background:radial-gradient(1200px 600px at 20% 0%, #171b35 0%, #0f1222 50%, #0b0e1a 100%);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";margin:0}
+  .wrap{max-width:1100px;margin:32px auto 64px;padding:0 20px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+  header h1{font-size:clamp(20px,3vw,28px);margin:0}
+  header .hint{color:var(--muted);font-size:14px;opacity:.9}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.06);border-radius:14px;box-shadow:var(--shadow);padding:16px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .label{color:var(--muted);font-size:13px;letter-spacing:.3px;text-transform:uppercase}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.25);color:#bfdbfe;padding:8px 12px;border-radius:999px;font-size:14px}
+  .btn{appearance:none;background:linear-gradient(180deg,#1b2242,#141a35);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 12px;font-weight:600;cursor:pointer;transition:transform .03s}
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn.ghost{background:transparent;border-color:rgba(255,255,255,.2);color:#cbd5e1}
+  .digits{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:clamp(28px,6vw,54px);letter-spacing:.04em;color:#a7f3d0;text-shadow:0 0 6px rgba(110,231,183,.55),0 0 22px rgba(110,231,183,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .display{background:#0b0f13;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:18px;min-height:84px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 18px rgba(0,0,0,.6)}
+  .meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  @media (max-width:680px){ .meta{grid-template-columns:1fr} }
+  .rowmeta{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between}
+  .highlight{ color:#fbbf24; text-shadow:0 0 6px rgba(251,191,36,.6), 0 0 18px rgba(251,191,36,.35) }
+  .groupTabs .btn{padding:6px 10px}
+  .optTabs .btn{padding:6px 10px}
+  .active{outline:2px solid rgba(96,165,250,.6)}
+  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(11,15,19,.9);color:#e5e7eb;border:1px solid rgba(255,255,255,.12);padding:10px 14px;border-radius:10px;box-shadow:var(--shadow);opacity:0;transition:opacity .25s ease;pointer-events:none;font-size:14px}
+  .toast.show{opacity:1}
+</style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1>Balança Digital — Algarismos Significativos</h1>
-      <div class="hint">Atalhos: <span class="kbd">←</span>/<span class="kbd">→</span> exemplo · <span class="kbd">↑</span>/<span class="kbd">↓</span> alg. sig. · <span class="kbd">R</span> reset</div>
+      <h1>Notação Científica — IV & V</h1>
+      <div class="hint">←/→ exemplo • ↑/↓ alterna científica/decimal • R reset</div>
     </header>
 
-    <div class="grid">
-      <section class="card">
-        <div class="stack">
-          <div class="label">Leitura da balança</div>
-          <div class="scale" aria-live="polite">
-            <div class="display">
-              <div class="digits" id="digits">—</div>
-              <div class="unit" id="unit"></div>
-            </div>
-
-            <div class="row">
-              <button class="btn" id="prevBtn">← Anterior</button>
-              <button class="btn" id="nextBtn">Próximo →</button>
-              <span class="pill">Exemplo <span id="exampleIndex">1</span>/<span id="exampleCount">—</span></span>
-              <span class="grow"></span>
-              <button class="btn secondary" id="decSf">−</button>
-              <span class="pill">Alg. sig.: <strong id="sfLabel">3</strong></span>
-              <button class="btn secondary" id="incSf">+</button>
-              <button class="btn ghost" id="resetBtn">Reset</button>
-            </div>
-
-            <div class="meta">
-              <div class="rowmeta"><span>Rótulo</span><strong id="labelValue">—</strong></div>
-              <div class="rowmeta"><span>Valor original</span><strong id="rawValue">—</strong></div>
-              <div class="rowmeta"><span>Arredondado (alg. sig.)</span><strong id="roundedValue">—</strong></div>
-              <div class="rowmeta"><span>Notação científica</span><strong id="sciValue">—</strong></div>
-              <div class="rowmeta"><span>Resolução do instrumento</span><strong id="resolution">—</strong></div>
-            </div>
-          </div>
-
-          <footer>
-            Use <span class="kbd">↑</span>/<span class="kbd">↓</span> para mudar os algarismos significativos e <span class="kbd">←</span>/<span class="kbd">→</span> para navegar pelos casos I, II e III da tabela.
-          </footer>
+    <section class="card">
+      <div class="row" style="justify-content:space-between">
+        <div class="row groupTabs" role="tablist" aria-label="Grupo">
+          <span class="label">Grupo</span>
+          <button class="btn ghost" id="tabIV">IV</button>
+          <button class="btn ghost" id="tabV">V</button>
         </div>
-      </section>
-
-      <aside class="card">
-        <div class="stack">
-          <div class="label">Sobre</div>
-          <p>Os exemplos listados reproduzem exatamente a tabela usada em aula (I, II e III), preservando zeros à direita e vírgulas no “Valor original”. O mostrador arredonda pelo número de algarismos significativos escolhido.</p>
-          <ul>
-            <li><strong>Valor original</strong>: o texto da tabela (formatação preservada).</li>
-            <li><strong>Arredondado</strong>: o mesmo valor com <span id="sfInline">3</span> alg. sig.</li>
-            <li><strong>Notação científica</strong>: com os mesmos algarismos significativos.</li>
-          </ul>
+        <div class="row optTabs" role="tablist" aria-label="Opção">
+          <span class="label">Opção</span>
+          <button class="btn ghost" data-opt="a">a</button>
+          <button class="btn ghost" data-opt="b">b</button>
+          <button class="btn ghost" data-opt="c">c</button>
+          <button class="btn ghost" data-opt="d">d</button>
+          <button class="btn ghost" data-opt="e">e</button>
         </div>
-      </aside>
-    </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="prevBtn">← Anterior</button>
+        <button class="btn" id="nextBtn">Próximo →</button>
+        <span class="pill">Exemplo: <strong id="labelNow">—</strong></span>
+        <span class="pill">Modo: <strong id="modeNow">Notação científica</strong></span>
+        <span class="pill">Alg. sig.: <strong id="sfNow">—</strong></span>
+      </div>
+
+      <div class="label" style="margin-top:12px">Exibição principal</div>
+      <div class="display"><div class="digits" id="mainDisplay">—</div></div>
+
+      <div class="meta" style="margin-top:12px">
+        <div class="rowmeta"><span>Texto original</span><strong id="rawText">—</strong></div>
+        <div class="rowmeta"><span>Mantissa</span><strong id="mantissaText">—</strong></div>
+        <div class="rowmeta"><span>Expoente</span><strong id="expText">—</strong></div>
+        <div class="rowmeta"><span>Valor decimal (com mesmos alg. sig.)</span><strong id="plainText">—</strong></div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <div class="label">Notas didáticas rápidas</div>
+      <ul>
+        <li><b>Algarismos significativos</b> vêm da <b>mantissa</b>. Ex.: 7×10⁻³ tem <b>1</b> alg. sig.; 7,00×10⁻³ tem <b>3</b>.</li>
+        <li><b>Zeros à esquerda</b> em decimal (0,007) <b>não</b> contam; <b>zeros à direita</b> contam <i>se forem escritos</i> (0,00700 = 3 alg. sig.).</li>
+        <li>Mostrar “0,007” <b>não implica</b> que a resolução seja 0,001; quem fixa a precisão é a forma de reporte (ex.: 0,00700 indicaria 3 alg. sig.).</li>
+      </ul>
+    </section>
   </div>
 
-  <div class="toast" id="toast">Dica: use ↑/↓ para mudar os algarismos significativos.</div>
+  <div class="toast" id="toast">↑/↓ alterna entre científica e decimal. ←/→ muda a, b, c…</div>
 
-  <script>
-    // ===== EXEMPLOS DA TABELA (com formatação preservada em rawStr) =====
-    // Cada item: { label, rawStr, value, unit, resolution }
-    const examples = [
-      // I)
-      { label:"I-a", rawStr:"7",       value:7,        unit:"", resolution:"" },
-      { label:"I-b", rawStr:"7,41",    value:7.41,     unit:"", resolution:"" },
-      { label:"I-c", rawStr:"7,414",   value:7.414,    unit:"", resolution:"" },
-      { label:"I-d", rawStr:"7,4",     value:7.4,      unit:"", resolution:"" },
+<script>
+  // ===== Dados dos exercícios (mantissa com ponto; raw preserva vírgula) =====
+  const EXS = [
+    // IV
+    { grp:"IV", opt:"a", raw:"7 × 10^-3",      m:7,        e:-3, sig:1 },
+    { grp:"IV", opt:"b", raw:"7,46 × 10^-3",   m:7.46,     e:-3, sig:3 },
+    { grp:"IV", opt:"c", raw:"7 × 10^-5",      m:7,        e:-5, sig:1 },
+    { grp:"IV", opt:"d", raw:"7,00 × 10^-3",   m:7.00,     e:-3, sig:3 },
+    { grp:"IV", opt:"e", raw:"7,00007 × 10^2", m:7.00007,  e: 2, sig:6 },
+    // V
+    { grp:"V", opt:"a", raw:"2,7 × 10^4",      m:2.7,      e: 4, sig:2 },
+    { grp:"V", opt:"b", raw:"2,70000 × 10^4",  m:2.70000,  e: 4, sig:6 },
+    { grp:"V", opt:"c", raw:"2,70 × 10^4",     m:2.70,     e: 4, sig:3 },
+    { grp:"V", opt:"d", raw:"2,700 × 10^4",    m:2.700,    e: 4, sig:4 },
+  ];
 
-      // II)
-      { label:"II-a", rawStr:"7,40",     value:7.40,    unit:"", resolution:"" },
-      { label:"II-b", rawStr:"7,0000",   value:7.0000,  unit:"", resolution:"" },
-      { label:"II-c", rawStr:"7,04",     value:7.04,    unit:"", resolution:"" },
-      { label:"II-d", rawStr:"7,0004",   value:7.0004,  unit:"", resolution:"" },
-      { label:"II-e", rawStr:"7,0400",   value:7.0400,  unit:"", resolution:"" },
-      { label:"II-f", rawStr:"700,4",    value:700.4,   unit:"", resolution:"" },
+  // estado
+  let i = 0;                         // índice do exemplo
+  let mode = "sci";                  // "sci" | "plain"
+  let sig = EXS[0].sig;
 
-      // III)
-      { label:"III-a", rawStr:",007",    value:0.007,    unit:"", resolution:"" },
-      { label:"III-b", rawStr:"0,007",   value:0.007,    unit:"", resolution:"" },
-      { label:"III-c", rawStr:"0,00746", value:0.00746,  unit:"", resolution:"" },
-      { label:"III-d", rawStr:"0,00007", value:0.00007,  unit:"", resolution:"" },
-      { label:"III-e", rawStr:"0,00700", value:0.00700,  unit:"", resolution:"" },
-      { label:"III-f", rawStr:"700,007", value:700.007,  unit:"", resolution:"" }
-    ];
+  // helpers
+  const $ = id => document.getElementById(id);
+  function setText(id, s){ $(id).textContent = s; }
+  function pulse(msg){
+    const t = $("toast"); if (msg) t.textContent = msg;
+    t.classList.add("show"); clearTimeout(pulse._t);
+    pulse._t = setTimeout(()=> t.classList.remove("show"), 1200);
+  }
 
-    // ===== Estado =====
-    let idx = 0;
-    let sigFigs = 3;
-    const MIN_SF = 1, MAX_SF = 8;
-
-    // ===== Helpers =====
-    function setText(id, txt){ document.getElementById(id).textContent = txt; }
-
-    function formatSci(num, n){
-      return Number(num).toExponential(Math.max(0, n-1));
+  function toPrecisionPlain(num, n){
+    const s = Number(num).toPrecision(n);
+    if (!/e/i.test(s)) return s;
+    const [coeff, eStr] = s.split(/e/i);
+    const exp = parseInt(eStr,10);
+    const [intPart, fracPart=""] = coeff.split(".");
+    let digits = intPart + fracPart;
+    if (exp >= 0){
+      const need = exp - fracPart.length;
+      if (need >= 0) return digits + "0".repeat(need);
+      const pos = intPart.length + exp;
+      return digits.slice(0,pos) + "." + digits.slice(pos);
+    }else{
+      const zeros = "0".repeat(Math.abs(exp)-1);
+      return "0." + zeros + digits;
     }
+  }
+  const comma = s => s.replace(/\./g, ",");
+  const hiLast = s => (s.length? s.slice(0,-1)+'<span class="highlight">'+s.slice(-1)+'</span>': s);
 
-    function formatDisplay(num, n){
-      if (!isFinite(num)) return String(num);
-      const p = Number(num).toPrecision(n);
-      const abs = Math.abs(num);
-      if (abs >= 1e-3 && abs < 1e6 && !p.includes("e")) return p;
-      return formatSci(num, n).replace("e+", "×10^").replace("e-", "×10^-");
-    }
+  function valueOf(ex){ return Number(ex.m) * Math.pow(10, ex.e); }
 
-    function update(){
-      const ex = examples[idx];
-      setText("exampleIndex", (idx+1));
-      setText("exampleCount", examples.length);
-      setText("unit", ex.unit);
-      setText("sfLabel", sigFigs);
-      setText("sfInline", sigFigs);
-      setText("labelValue", ex.label);
+  function render(){
+    const ex = EXS[i];
+    sig = ex.sig; // ao trocar, assume alg. sig. do item
+    const label = `${ex.grp}-${ex.opt}`;
+    setText("labelNow", label);
+    setText("modeNow", mode === "sci" ? "Notação científica" : "Forma decimal");
+    setText("sfNow", sig);
+    setText("rawText", ex.raw);
+    setText("mantissaText", comma(String(ex.m)));
+    setText("expText", String(ex.e));
 
-      const rounded = Number(ex.value).toPrecision(sigFigs);
-      const big = formatDisplay(ex.value, sigFigs);
+    // montar exibição principal e decimal equivalente
+    const mantissa = Number(ex.m).toPrecision(sig);        // mantém zeros significativos
+    const sciHTML  = hiLast(comma(mantissa)) + " × 10^" + ex.e;
+    const plainStr = comma(toPrecisionPlain(valueOf(ex), sig));
+    const plainHTML= hiLast(plainStr);
 
-      setText("digits", big);
-      setText("rawValue", ex.rawStr + (ex.unit ? " " + ex.unit : ""));
-      setText("roundedValue", `${rounded}${ex.unit ? " " + ex.unit : ""}`);
-      setText("sciValue", `${formatSci(ex.value, sigFigs)}${ex.unit ? " " + ex.unit : ""}`);
-      setText("resolution", ex.resolution || "—");
+    // atualiza displays conforme modo
+    $("mainDisplay").innerHTML = (mode === "sci") ? sciHTML : plainHTML;
+    setText("plainText", comma(toPrecisionPlain(valueOf(ex), sig)));
+    updateTabs();
+  }
 
-      document.title = `${ex.label} — Balança Digital`;
-    }
+  function prev(){ i = (i - 1 + EXS.length) % EXS.length; mode = "sci"; render(); pulse(); }
+  function next(){ i = (i + 1) % EXS.length; mode = "sci"; render(); pulse(); }
+  function flipMode(){ mode = (mode==="sci") ? "plain" : "sci"; render(); pulse(mode==="sci"?"Modo: científica":"Modo: decimal"); }
+  function setGroup(grp){
+    const idx = EXS.findIndex(e => e.grp===grp);
+    if (idx>=0){ i = idx; mode="sci"; render(); }
+  }
+  function setOption(opt){
+    const grp = EXS[i].grp;
+    const idx = EXS.findIndex(e => e.grp===grp && e.opt===opt);
+    if (idx>=0){ i = idx; mode="sci"; render(); pulse(`Exemplo ${grp}-${opt}`); }
+  }
 
-    function next(){ idx = (idx + 1) % examples.length; pulseToast(); update(); }
-    function prev(){ idx = (idx - 1 + examples.length) % examples.length; pulseToast(); update(); }
-    function inc(){ sigFigs = Math.min(MAX_SF, sigFigs + 1); pulseToast(); update(); }
-    function dec(){ sigFigs = Math.max(MIN_SF, sigFigs - 1); pulseToast(); update(); }
-    function reset(){ idx = 0; sigFigs = 3; update(); }
+  // UI
+  $("prevBtn").addEventListener("click", prev);
+  $("nextBtn").addEventListener("click", next);
+  $("tabIV").addEventListener("click", ()=>setGroup("IV"));
+  $("tabV").addEventListener("click", ()=>setGroup("V"));
+  document.querySelectorAll('[data-opt]').forEach(b=> b.addEventListener("click", ()=> setOption(b.dataset.opt)));
 
-    // UI
-    document.getElementById("nextBtn").addEventListener("click", next);
-    document.getElementById("prevBtn").addEventListener("click", prev);
-    document.getElementById("incSf").addEventListener("click", inc);
-    document.getElementById("decSf").addEventListener("click", dec);
-    document.getElementById("resetBtn").addEventListener("click", reset);
-    window.addEventListener("keydown", (e)=>{
-      if (e.key === "ArrowRight") next();
-      else if (e.key === "ArrowLeft") prev();
-      else if (e.key === "ArrowUp") inc();
-      else if (e.key === "ArrowDown") dec();
-      else if (e.key.toLowerCase() === "r") reset();
+  window.addEventListener("keydown", e=>{
+    if (e.key==="ArrowLeft") prev();
+    else if (e.key==="ArrowRight") next();
+    else if (e.key==="ArrowUp" || e.key==="ArrowDown") flipMode(); // alterna científica/decimal
+    else if (e.key.toLowerCase()==="r"){ i=0; mode="sci"; render(); }
+    // atalhos diretos: 1/2 mudam grupo, a/b/c/d/e mudam opção do grupo atual
+    else if (e.key==="1") setGroup("IV");
+    else if (e.key==="2") setGroup("V");
+    else if (/[abcde]/i.test(e.key)) setOption(e.key.toLowerCase());
+  });
+
+  function updateTabs(){
+    // destacar grupo/opt atuais
+    $("tabIV").classList.toggle("active", EXS[i].grp==="IV");
+    $("tabV").classList.toggle("active", EXS[i].grp==="V");
+    document.querySelectorAll('[data-opt]').forEach(b=>{
+      b.classList.toggle("active", b.dataset.opt===EXS[i].opt);
+      // esconde botão "e" quando grupo V (só vai até d)
+      if (b.dataset.opt==="e") b.style.display = (EXS[i].grp==="IV") ? "" : "none";
     });
+  }
 
-    // Toast
-    let toastTimer = null;
-    function pulseToast(msg){
-      const el = document.getElementById("toast");
-      if (msg) el.textContent = msg;
-      el.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(()=> el.classList.remove("show"), 900);
-    }
-
-    // init
-    update();
-    setTimeout(()=>{
-      const el = document.getElementById("toast");
-      el.textContent = "Use ←/→ para navegar e ↑/↓ para algarismos significativos.";
-      el.classList.add("show");
-      setTimeout(()=> el.classList.remove("show"), 2500);
-    }, 600);
-  </script>
+  // init
+  render();
+  setTimeout(()=>{ const t=$("toast"); t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 2300); }, 400);
+</script>
 </body>
 </html>
