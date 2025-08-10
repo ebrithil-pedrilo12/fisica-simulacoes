@@ -266,11 +266,13 @@
   }
 
   function frame(ts){
-    if (lastTs==null) lastTs=ts;
-    const dt = Math.min(0.05, (ts-lastTs)/1000);
-    lastTs=ts;
-    if (running){ step(dt); requestAnimationFrame(frame); }
+      if (lastTs==null) lastTs=ts;
+      const speedFactor = 50; // controle de velocidade da simulação
+      const dt = Math.min(0.05, (ts-lastTs)/1000) * speedFactor;
+      lastTs=ts;
+      if (running){ step(dt); requestAnimationFrame(frame); }
   }
+
 
   function play(){ if(!running && t<T){ running=true; lastTs=null; requestAnimationFrame(frame); } }
   function pause(){ running=false; }
@@ -293,4 +295,5 @@
 </script>
 </body>
 </html>
+
 
