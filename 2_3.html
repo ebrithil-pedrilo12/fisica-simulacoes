@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EPA 2.3 — Queda livre (simulador)</title>
+  <style>
+    :root{
+      --bg:#0f1222; --panel:#171b35; --panel2:#1f2447; --text:#e6ebf2; --muted:#9aa3b2;
+      --accent:#60a5fa; --accent2:#6ee7b7; --danger:#f43f5e; --ok:#22c55e;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 20% 0%, #171b35 0%, #0f1222 50%, #0b0e1a 100%);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:1100px;margin:28px auto 56px;padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    header{max-width:1100px;margin:20px auto 8px;padding:0 16px}
+    h1{margin:0 0 4px;font-size:28px}
+    p.sub{margin:0;color:var(--muted)}
+    .card{background:linear-gradient(180deg,var(--panel) 0%, var(--panel2) 100%);border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .panel{padding:16px}
+    canvas{width:100%;height:300px;display:block;border-radius:12px;background:#0e1230;margin-top:10px}
+    table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin-top:10px}
+    th,td{border-bottom:1px solid rgba(255,255,255,.08);padding:8px 10px;text-align:right}
+    th:nth-child(1),td:nth-child(1){text-align:center}
+    th{position:sticky;top:0;background:#1a2044}
+    .small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Exercício 2.3 (EPA!!) — Simulador de queda livre</h1>
+    <p class="sub">Tabela e gráfico v×t atualizados em tempo real. Área sob a curva representa o deslocamento.</p>
+  </header>
+  <div class="wrap">
+    <!-- Simulação à esquerda -->
+    <section class="card panel">
+      <label>Altura inicial H [m]: <input id="H" type="number" value="500" step="1" min="1"></label>
+      <label>Aceleração g [m/s²]: <input id="g" type="number" value="10" step="0.1" min="0"></label>
+      <button id="play">▶️ Iniciar</button>
+      <button id="pause">⏸️ Pausar</button>
+      <button id="reset">🔄 Resetar</button>
+      <canvas id="scene"></canvas>
+      <table id="tab">
+        <thead><tr><th>t [s]</th><th>v [m/s]</th><th>Δs [m]</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <!-- Gráfico à direita -->
+    <section class="card panel">
+      <canvas id="graph"></canvas>
+    </section>
+  </div>
+  <script>
+    const H=document.getElementById('H');
+    const g=document.getElementById('g');
+    const play=document.getElementById('play');
+    const pause=document.getElementById('pause');
+    const reset=document.getElementById('reset');
+    const scene=document.getElementById('scene');
+    const graph=document.getElementById('graph');
+    const ctxS=scene.getContext('2d');
+    const ctxG=graph.getContext('2d');
+    const tbody=document.querySelector('#tab tbody');
+
+    let t=0,running=false,last=0,prevS=0,filledSeconds=0;
+
+    function timeToHit(Hv,gv){return gv>0?Math.sqrt(2*Hv/gv):Infinity;}
+
+    function resetAll(){t=0;running=false;last=0;prevS=0;filledSeconds=0;tbody.innerHTML='';drawScene();drawGraph();}
+
+    function drawScene(){
+      const w=scene.width,h=scene.height;scene.width=scene.clientWidth;scene.height=scene.clientHeight;
+      const Hv=parseFloat(H.value),gv=parseFloat(g.value);
+      const usable=h-40;const metersToPx=usable/Hv;
+      ctxS.clearRect(0,0,w,h);
+      ctxS.fillStyle='#6f6a58';ctxS.fillRect(80,20,80,usable);
+      const s=Math.min(0.5*gv*t*t,Hv);
+      const yBall=20+s*metersToPx;
+      ctxS.beginPath();ctxS.fillStyle='#fbbf24';ctxS.arc(120,yBall,12,0,Math.PI*2);ctxS.fill();
+    }
+
+    function drawGraph(){
+      const w=graph.width,h=graph.height;graph.width=graph.clientWidth;graph.height=graph.clientHeight;
+      ctxG.clearRect(0,0,w,h);
+      const gv=parseFloat(g.value);
+      const maxT=10; // força o gráfico até t=10
+      // grid + labels de tempo e velocidade
+      ctxG.strokeStyle='rgba(255,255,255,0.15)';ctxG.lineWidth=1;
+      ctxG.font='12px system-ui';ctxG.fillStyle='white';
+      for(let i=0;i<=maxT;i++){
+        const x=40+i*( (w-50)/maxT );ctxG.beginPath();ctxG.moveTo(x,0);ctxG.lineTo(x,h-30);ctxG.stroke();ctxG.fillText(i,x-5,h-10);
+      }
+      const maxV=gv*maxT;
+      for(let v=0;v<=maxV;v+=gv){
+        const y=h-30-(v)*( (h-50)/maxV );ctxG.beginPath();ctxG.moveTo(40,y);ctxG.lineTo(w,y);ctxG.stroke();ctxG.fillText(v,5,y+4);
+      }
+      // eixo v×t
+      ctxG.strokeStyle='white';ctxG.beginPath();ctxG.moveTo(40,0);ctxG.lineTo(40,h-30);ctxG.moveTo(40,h-30);ctxG.lineTo(w,h-30);ctxG.stroke();
+      // curva v=g·t
+      ctxG.strokeStyle='#60a5fa';ctxG.beginPath();ctxG.moveTo(40,h-30);
+      for(let i=0;i<=Math.min(t,maxT);i+=0.1){
+        const x=40+i*( (w-50)/maxT );const y=h-30-(gv*i)*( (h-50)/maxV );ctxG.lineTo(x,y);
+      }
+      ctxG.stroke();
+      // área sob a curva
+      ctxG.fillStyle='rgba(96,165,250,0.3)';ctxG.beginPath();ctxG.moveTo(40,h-30);
+      for(let i=0;i<=Math.min(Math.floor(t),maxT);i+=0.1){const x=40+i*( (w-50)/maxT );const y=h-30-(gv*i)*( (h-50)/maxV );ctxG.lineTo(x,y);}ctxG.lineTo(40,h-30);ctxG.fill();
+    }
+
+    function updateTable(){
+      const gv=parseFloat(g.value);
+      const sec=Math.floor(t);
+      if(sec>filledSeconds){
+        const v=gv*sec;
+        const S=0.5*gv*sec*sec;
+        const dS=sec===0?0:S-prevS;
+        const tr=document.createElement('tr');tr.innerHTML=`<td>${sec}</td><td>${v.toFixed(0)}</td><td>${dS.toFixed(0)}</td>`;
+        tbody.appendChild(tr);
+        prevS=S;filledSeconds=sec;
+      }
+    }
+
+    function tick(ts){
+      if(!running)return;
+      if(!last)last=ts;const dt=(ts-last)/1000;last=ts;
+      const gv=parseFloat(g.value),Hv=parseFloat(H.value);
+      t=Math.min(t+dt,timeToHit(Hv,gv));
+      drawScene();drawGraph();updateTable();
+      if(t>=timeToHit(Hv,gv))running=false;requestAnimationFrame(tick);
+    }
+
+    play.onclick=()=>{if(!running){running=true;last=0;requestAnimationFrame(tick);}};
+    pause.onclick=()=>running=false;
+    reset.onclick=resetAll;
+
+    resetAll();
+  </script>
+</body>
+</html>
