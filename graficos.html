@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simulações de Gráficos — MU e MUV</title>
+  <style>
+    :root{
+      --bg:#0f1222; --panel:#171b35; --panel2:#1f2447; --text:#e6ebf2; --muted:#9aa3b2; --accent:#60a5fa; --accent2:#6ee7b7;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 20% 0%, #171b35 0%, #0f1222 50%, #0b0e1a 100%);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    header{max-width:1200px;margin:24px auto 10px;padding:0 16px}
+    h1{margin:0 0 6px}
+    p.sub{margin:0;color:var(--muted)}
+    .wrap{max-width:1200px;margin:8px auto 56px;padding:0 16px;display:grid;grid-template-columns:320px 1fr;gap:16px}
+    .card{background:linear-gradient(180deg,var(--panel) 0%, var(--panel2) 100%);border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .panel{padding:16px}
+    label{display:block;font-size:12px;color:var(--muted);margin:8px 0 6px}
+    input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0e1230;color:var(--text)}
+    .row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    button{appearance:none;border:0;border-radius:12px;padding:10px 12px;background:var(--accent);color:#0b1027;font-weight:700;cursor:pointer}
+    button.secondary{background:#263066;color:var(--text)}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--text)}
+    canvas{width:100%;height:240px;background:#0e1230;border-radius:12px;display:block}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .charts{display:grid;grid-template-columns:1fr;gap:14px}
+    .charts h3{margin:0 0 6px;font-size:15px;color:var(--muted)}
+    @media(min-width:900px){.charts{grid-template-columns:1fr 1fr 1fr}}
+    table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+    th,td{border-bottom:1px solid rgba(255,255,255,.08);padding:6px 8px;text-align:right}
+    th:first-child, td:first-child{ text-align:center }
+    .note{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Simulações de Gráficos — Movimento Uniforme (MU) e MUV</h1>
+    <p class="sub">Ajuste os parâmetros, rode a simulação e observe os gráficos <b>s×t</b>, <b>v×t</b> e <b>a×t</b>. A área de <b>v×t</b> representa o deslocamento (retângulo no MU, triângulo/trapézio no MUV).</p>
+  </header>
+
+  <div class="wrap">
+    <!-- CONTROLES -->
+    <section class="card panel">
+      <div class="row">
+        <div>
+          <label>Tipo de movimento</label>
+          <select id="tipo">
+            <option value="MU">MU — Movimento Uniforme (a = 0)</option>
+            <option value="MUV">MUV — Aceleração constante</option>
+          </select>
+        </div>
+        <div>
+          <label>Duração T [s]</label>
+          <input id="T" type="number" value="10" min="1" step="1" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Posição inicial s₀ [m]</label>
+          <input id="s0" type="number" value="0" step="1" />
+        </div>
+        <div>
+          <label>Velocidade inicial v₀ [m/s]</label>
+          <input id="v0" type="number" value="5" step="1" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Aceleração a [m/s²] (fixo 0 no MU)</label>
+          <input id="a" type="number" value="0" step="0.5" />
+        </div>
+        <div>
+          <label>Velocidade da simulação</label>
+          <input id="speed" type="range" min="0.25" max="4" step="0.25" value="1" />
+        </div>
+      </div>
+      <div class="btns">
+        <button id="play">▶️ Iniciar</button>
+        <button id="pause" class="secondary">⏸️ Pausar</button>
+        <button id="reset" class="ghost">🔄 Resetar</button>
+        <button id="exMU" class="secondary">Exemplo MU (v₀=5)</button>
+        <button id="exMUV" class="secondary">Exemplo MUV (v₀=10, a=-2)</button>
+      </div>
+      <p class="note">No MU, a área em v×t é um <b>retângulo</b> (deslocamento = v·t). No MUV, é um <b>triângulo</b> se v₀=0 ou <b>trapézio</b> se v₀≠0.</p>
+      <table id="tab"><thead><tr><th>t [s]</th><th>s [m]</th><th>v [m/s]</th><th>a [m/s²]</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <!-- GRÁFICOS -->
+    <section class="grid">
+      <div class="charts">
+        <div>
+          <h3>posição × tempo (s×t)</h3>
+          <canvas id="cS"></canvas>
+        </div>
+        <div>
+          <h3>velocidade × tempo (v×t)</h3>
+          <canvas id="cV"></canvas>
+        </div>
+        <div>
+          <h3>aceleração × tempo (a×t)</h3>
+          <canvas id="cA"></canvas>
+        </div>
+      </div>
+      <div class="card panel">
+        <h3 style="margin-top:0">Animação da partícula (1D)</h3>
+        <canvas id="cAnim" style="height:140px"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ===== Helpers =====
+    const $ = (q)=>document.querySelector(q);
+    const tipo=$('#tipo'), T=$('#T'), s0=$('#s0'), v0=$('#v0'), a=$('#a'), speed=$('#speed');
+    const play=$('#play'), pauseBtn=$('#pause'), resetBtn=$('#reset');
+    const exMU=$('#exMU'), exMUV=$('#exMUV');
+    const cS=$('#cS'), cV=$('#cV'), cA=$('#cA'), cAnim=$('#cAnim');
+    const ctxS=cS.getContext('2d'), ctxV=cV.getContext('2d'), ctxA=cA.getContext('2d'), ctxAnim=cAnim.getContext('2d');
+    const tbody=$('#tab tbody');
+
+    let t=0, running=false, last=0;
+
+    function clamp(n, lo, hi){ return Math.max(lo, Math.min(hi, n)); }
+
+    // Equações de movimento
+    function s(t){ const s0v=parseFloat(s0.value), v0v=parseFloat(v0.value), av=(tipo.value==='MU'?0:parseFloat(a.value)); return s0v + v0v*t + 0.5*av*t*t; }
+    function v(t){ const v0v=parseFloat(v0.value), av=(tipo.value==='MU'?0:parseFloat(a.value)); return v0v + av*t; }
+    function acc(){ return (tipo.value==='MU'?0:parseFloat(a.value)); }
+
+    // Grade + eixos reutilizáveis
+    function drawAxes(ctx, w, h, Tmax, ymin, ymax, labelX, labelY){
+      ctx.clearRect(0,0,w,h);
+      const left=40, bottom=26, top=8, right=8;
+      const W=w-left-right, H=h-top-bottom;
+      // grid
+      ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=1;
+      for(let i=0;i<=Tmax;i++){
+        const x=left + (i/Tmax)*W; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top+H); ctx.stroke();
+      }
+      const ticksY=6; // 6 divisões padrão
+      for(let j=0;j<=ticksY;j++){
+        const y=top + (j/ticksY)*H; ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(left+W, y); ctx.stroke();
+      }
+      // eixos
+      ctx.strokeStyle='white';
+      ctx.beginPath(); ctx.moveTo(left, top); ctx.lineTo(left, top+H); ctx.moveTo(left, top+H); ctx.lineTo(left+W, top+H); ctx.stroke();
+      // labels X
+      ctx.fillStyle='white'; ctx.font='12px system-ui';
+      for(let i=0;i<=Tmax;i++){ const x=left+(i/Tmax)*W; ctx.fillText(i, x-3, top+H+18); }
+      // labels Y (min..max)
+      for(let j=0;j<=ticksY;j++){
+        const yv = ymin + (ticksY-j)*(ymax-ymin)/ticksY; const y=top + (j/ticksY)*H; ctx.fillText(yv.toFixed(0), 6, y+4);
+      }
+      // títulos e eixos desc
+      ctx.fillStyle='rgba(255,255,255,.7)';
+      ctx.fillText(labelX, left+W-20, top+H+18);
+      ctx.save(); ctx.translate(14, top+12); ctx.rotate(-Math.PI/2); ctx.fillText(labelY, 0, 0); ctx.restore();
+      return {left, top, W, H};
+    }
+
+    // Conversão valor->pixel
+    function yToPix(y, ymin, ymax, top, H){ return top + (1 - (y-ymin)/(ymax-ymin)) * H; }
+    function xToPix(t, Tmax, left, W){ return left + (t/Tmax)*W; }
+
+    function drawAll(){
+      // Dimensões responsivas
+      [cS,cV,cA,cAnim].forEach(c=>{ c.width=c.clientWidth; c.height=c.clientHeight; });
+      const Tmax=parseInt(T.value);
+      // limites Y adequados
+      const sVals=[s(0), s(Tmax)]; const vVals=[v(0), v(Tmax), 0];
+      const smin=Math.min(...sVals), smax=Math.max(...sVals);
+      const vmin=Math.min(...vVals), vmax=Math.max(...vVals);
+      const amin=acc(), amax=acc();
+
+      // s×t
+      let {left, top, W, H} = drawAxes(ctxS, cS.width, cS.height, Tmax, Math.floor(smin), Math.ceil(smax), 't [s]', 's [m]');
+      ctxS.strokeStyle='#60a5fa'; ctxS.beginPath(); for(let ti=0; ti<=t; ti+=Tmax/200){ const x=xToPix(ti,Tmax,left,W), y=yToPix(s(ti),Math.floor(smin),Math.ceil(smax),top,H); ti===0?ctxS.moveTo(x,y):ctxS.lineTo(x,y);} ctxS.stroke();
+
+      // v×t + área corretamente (retângulo MU, triângulo/trapézio MUV)
+      const vLow=Math.floor(vmin), vHigh=Math.ceil(vmax);
+      ({left, top, W, H} = drawAxes(ctxV, cV.width, cV.height, Tmax, vLow, vHigh, 't [s]', 'v [m/s]'));
+      // curva v(t)
+      ctxV.strokeStyle='#60a5fa'; ctxV.beginPath(); for(let ti=0; ti<=t; ti+=Tmax/200){ const x=xToPix(ti,Tmax,left,W), y=yToPix(v(ti),vLow,vHigh,top,H); ti===0?ctxV.moveTo(x,y):ctxV.lineTo(x,y);} ctxV.stroke();
+      // área sob a curva até t (baseline em v=0)
+      const x0=xToPix(0,Tmax,left,W), xT=xToPix(t,Tmax,left,W);
+      const yZero=yToPix(0,vLow,vHigh,top,H);
+      ctxV.fillStyle='rgba(96,165,250,.25)';
+      ctxV.beginPath();
+      ctxV.moveTo(x0, yZero);                           // começa no eixo (t=0, v=0)
+      for(let ti=0; ti<=t; ti+=Tmax/200){               // traça a curva até o tempo atual
+        const x=xToPix(ti,Tmax,left,W), y=yToPix(v(ti),vLow,vHigh,top,H);
+        ctxV.lineTo(x,y);
+      }
+      ctxV.lineTo(xT, yZero);                           // volta ao eixo no tempo atual → forma retângulo/triângulo/trapézio
+      ctxV.closePath();
+      ctxV.fill();
+
+      // a×t
+      ({left, top, W, H} = drawAxes(ctxA, cA.width, cA.height, Tmax, Math.min(0,amin)-1, Math.max(0,amax)+1, 't [s]', 'a [m/s²]'));
+      ctxA.strokeStyle='#60a5fa'; ctxA.beginPath(); ctxA.moveTo(xToPix(0,Tmax,left,W), yToPix(acc(), Math.min(0,amin)-1, Math.max(0,amax)+1, top, H));
+      ctxA.lineTo(xToPix(Math.min(t,Tmax),Tmax,left,W), yToPix(acc(), Math.min(0,amin)-1, Math.max(0,amax)+1, top, H)); ctxA.stroke();
+
+      // Animação 1D
+      cAnim.width=cAnim.clientWidth; cAnim.height=cAnim.clientHeight;
+      const w=cAnim.width, h=cAnim.height; ctxAnim.clearRect(0,0,w,h);
+      ctxAnim.fillStyle='rgba(255,255,255,.2)'; ctxAnim.fillRect(20, h/2-2, w-40, 4);
+      const sMinAxis=Math.floor(smin), sMaxAxis=Math.ceil(smax);
+      const xAnim = 20 + ( (s(t)-sMinAxis) / (sMaxAxis - sMinAxis || 1) ) * (w-40);
+      ctxAnim.beginPath(); ctxAnim.fillStyle='#fbbf24'; ctxAnim.arc(xAnim, h/2, 10, 0, Math.PI*2); ctxAnim.fill();
+    }
+
+    function updateTable(){
+      const Tmax=parseInt(T.value);
+      const sec=Math.floor(t);
+      tbody.innerHTML='';
+      for(let k=0;k<=sec && k<=Tmax;k++){
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${k}</td><td>${s(k).toFixed(2)}</td><td>${v(k).toFixed(2)}</td><td>${acc().toFixed(2)}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function loop(ts){
+      if(!running){ return; }
+      if(!last) last = ts; const dt = (ts - last)/1000 * parseFloat(speed.value); last = ts;
+      t = clamp(t + dt, 0, parseInt(T.value));
+      drawAll(); updateTable();
+      if(t >= parseInt(T.value)){ running = false; }
+      requestAnimationFrame(loop);
+    }
+
+    // UI
+    play.onclick = ()=>{ if(!running){ running=true; last=0; requestAnimationFrame(loop);} };
+    pauseBtn.onclick = ()=>{ running=false; };
+    resetBtn.onclick = ()=>{ running=false; t=0; last=0; drawAll(); updateTable(); };
+    tipo.oninput = ()=>{ if(tipo.value==='MU'){ a.value = 0; a.disabled=true; } else { a.disabled=false; } drawAll(); };
+    [T,s0,v0,a,speed].forEach(el=> el.addEventListener('input', ()=>{ if(tipo.value==='MU') a.value=0; drawAll(); updateTable(); }));
+    exMU.onclick = ()=>{ tipo.value='MU'; a.value=0; a.disabled=true; s0.value=0; v0.value=5; T.value=10; t=0; drawAll(); updateTable(); };
+    exMUV.onclick = ()=>{ tipo.value='MUV'; a.disabled=false; s0.value=0; v0.value=10; a.value=-2; T.value=10; t=0; drawAll(); updateTable(); };
+
+    // inicial
+    a.disabled = (tipo.value==='MU');
+    drawAll(); updateTable();
+  </script>
+</body>
+</html>
